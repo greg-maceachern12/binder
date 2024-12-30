@@ -1,101 +1,166 @@
-import Image from "next/image";
+// src/app/page.tsx
+'use client';
+
+import { useState } from 'react';
+import { Loader2 } from 'lucide-react';
+import { Syllabus, DetailedLesson } from '@/app/types';
+import SyllabusDisplay from '@/app/components/SyllabusDisplay';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+  const [topic, setTopic] = useState('');
+  const [syllabus, setSyllabus] = useState<Syllabus | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [generatingLessons, setGeneratingLessons] = useState(false);
+  const [generatedLessons, setGeneratedLessons] = useState<{ [key: string]: DetailedLesson }>({});
+  const [currentGeneratingLesson, setCurrentGeneratingLesson] = useState<string>('');
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
+  const handleGenerateSyllabus = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const response = await fetch('/api/generate-syllabus', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic })
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to generate syllabus');
+      }
+
+      setSyllabus(data.syllabus);
+    } catch (error) {
+      setError(error instanceof Error ? error.message : 'An error occurred');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGenerateFullCourse = async () => {
+    if (!syllabus) return;
+  
+    setGeneratingLessons(true);
+    const newGeneratedLessons: { [key: string]: DetailedLesson } = { ...generatedLessons }; // Preserve existing lessons
+  
+    // Test mode configuration
+    const TEST_MODE = false;
+    const MAX_CHAPTERS = TEST_MODE ? 1 : syllabus.chapters.length;
+    const MAX_LESSONS = TEST_MODE ? 2 : undefined;
+  
+    try {
+      // Get chapters based on test configuration
+      const chaptersToProcess = syllabus.chapters.slice(0, MAX_CHAPTERS);
+  
+      for (const chapter of chaptersToProcess) {
+        // Get lessons based on test configuration
+        const lessonsToProcess = MAX_LESSONS 
+          ? chapter.lessons.slice(0, MAX_LESSONS)
+          : chapter.lessons;
+  
+        for (const lesson of lessonsToProcess) {
+          setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+          const response = await generateLesson(chapter, lesson);
+          
+          // Update state immediately after each lesson is generated
+          newGeneratedLessons[lesson.id] = response;
+          setGeneratedLessons({ ...newGeneratedLessons });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate lessons:', error);
+      setError('Failed to generate some lessons');
+    }
+  
+    setGeneratingLessons(false);
+    setCurrentGeneratingLesson('');
+  };
+
+  // const handleGenerateFullCourse = async () => {
+  //   if (!syllabus) return;
+
+  //   setGeneratingLessons(true);
+  //   const newGeneratedLessons: { [key: string]: DetailedLesson } = {};
+
+  //   try {
+  //     for (const chapter of syllabus.chapters) {
+  //       for (const lesson of chapter.lessons) {
+  //         setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+  //         const response = await generateLesson(chapter, lesson);
+  //         newGeneratedLessons[lesson.id] = response;
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error('Failed to generate lessons:', error);
+  //     setError('Failed to generate some lessons');
+  //   }
+
+  //   setGeneratedLessons(newGeneratedLessons);
+  //   setGeneratingLessons(false);
+  //   setCurrentGeneratingLesson('');
+  // };
+
+  const generateLesson = async (chapter: any, lesson: any) => {
+    const response = await fetch('/api/generate-lesson', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        lessonId: lesson.id,
+        lessonTitle: lesson.title,
+        chapterTitle: chapter.title,
+        courseTitle: syllabus?.title
+      })
+    });
+
+    const data = await response.json();
+    
+    if (!response.ok) {
+      throw new Error(data.error || 'Failed to generate lesson');
+    }
+    console.log(data.lesson);
+    return data.lesson;
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-50 p-8">
+      {!syllabus && (
+        <div className="max-w-2xl mx-auto text-center">
+          <h1 className="text-4xl font-bold mb-8 text-gray-800">
+            What do you want to learn today?
+          </h1>
+          <div className="flex gap-4 justify-center">
+            <input
+              type="text"
+              value={topic}
+              onChange={(e) => setTopic(e.target.value)}
+              placeholder="Enter a topic (e.g., Wealth Management)"
+              className="flex-1 px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={isLoading}
             />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            <button
+              onClick={handleGenerateSyllabus}
+              disabled={!topic || isLoading}
+              className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center min-w-[100px]"
+            >
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Generate'}
+            </button>
+          </div>
+          {error && <p className="mt-4 text-red-600">{error}</p>}
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      )}
+
+      {syllabus && (
+        <SyllabusDisplay
+          syllabus={syllabus}
+          onGenerateFullCourse={handleGenerateFullCourse}
+          generatingLessons={generatingLessons}
+          currentGeneratingLesson={currentGeneratingLesson}
+          generatedLessons={generatedLessons}
+        />
+      )}
+    </main>
   );
 }
