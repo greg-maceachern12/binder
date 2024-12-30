@@ -3,7 +3,7 @@
 
 import { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { Syllabus, DetailedLesson } from '@/app/types';
+import { Syllabus, DetailedLesson, Chapter, SyllabusLesson } from '@/app/types';
 import SyllabusDisplay from '@/app/components/SyllabusDisplay';
 
 export default function Home() {
@@ -31,7 +31,7 @@ export default function Home() {
       if (!response.ok) {
         throw new Error(data.error || 'Failed to generate syllabus');
       }
-
+      console.log(data.syllabus);
       setSyllabus(data.syllabus);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
@@ -40,70 +40,7 @@ export default function Home() {
     }
   };
 
-  const handleGenerateFullCourse = async () => {
-    if (!syllabus) return;
-  
-    setGeneratingLessons(true);
-    const newGeneratedLessons: { [key: string]: DetailedLesson } = { ...generatedLessons }; // Preserve existing lessons
-  
-    // Test mode configuration
-    const TEST_MODE = false;
-    const MAX_CHAPTERS = TEST_MODE ? 1 : syllabus.chapters.length;
-    const MAX_LESSONS = TEST_MODE ? 2 : undefined;
-  
-    try {
-      // Get chapters based on test configuration
-      const chaptersToProcess = syllabus.chapters.slice(0, MAX_CHAPTERS);
-  
-      for (const chapter of chaptersToProcess) {
-        // Get lessons based on test configuration
-        const lessonsToProcess = MAX_LESSONS 
-          ? chapter.lessons.slice(0, MAX_LESSONS)
-          : chapter.lessons;
-  
-        for (const lesson of lessonsToProcess) {
-          setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
-          const response = await generateLesson(chapter, lesson);
-          
-          // Update state immediately after each lesson is generated
-          newGeneratedLessons[lesson.id] = response;
-          setGeneratedLessons({ ...newGeneratedLessons });
-        }
-      }
-    } catch (error) {
-      console.error('Failed to generate lessons:', error);
-      setError('Failed to generate some lessons');
-    }
-  
-    setGeneratingLessons(false);
-    setCurrentGeneratingLesson('');
-  };
-
-  // const handleGenerateFullCourse = async () => {
-  //   if (!syllabus) return;
-
-  //   setGeneratingLessons(true);
-  //   const newGeneratedLessons: { [key: string]: DetailedLesson } = {};
-
-  //   try {
-  //     for (const chapter of syllabus.chapters) {
-  //       for (const lesson of chapter.lessons) {
-  //         setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
-  //         const response = await generateLesson(chapter, lesson);
-  //         newGeneratedLessons[lesson.id] = response;
-  //       }
-  //     }
-  //   } catch (error) {
-  //     console.error('Failed to generate lessons:', error);
-  //     setError('Failed to generate some lessons');
-  //   }
-
-  //   setGeneratedLessons(newGeneratedLessons);
-  //   setGeneratingLessons(false);
-  //   setCurrentGeneratingLesson('');
-  // };
-
-  const generateLesson = async (chapter: any, lesson: any) => {
+  const generateLesson = async (chapter: Chapter, lesson: SyllabusLesson) => {
     const response = await fetch('/api/generate-lesson', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -120,8 +57,43 @@ export default function Home() {
     if (!response.ok) {
       throw new Error(data.error || 'Failed to generate lesson');
     }
-    console.log(data.lesson);
+
     return data.lesson;
+  };
+
+  const handleGenerateFullCourse = async () => {
+    if (!syllabus) return;
+
+    setGeneratingLessons(true);
+    const newGeneratedLessons: { [key: string]: DetailedLesson } = { ...generatedLessons };
+
+    // Test mode configuration
+    const TEST_MODE = true
+    const MAX_CHAPTERS = TEST_MODE ? 1 : syllabus.chapters.length;
+    const MAX_LESSONS = TEST_MODE ? 3 : undefined;
+
+    try {
+      const chaptersToProcess = syllabus.chapters.slice(0, MAX_CHAPTERS);
+
+      for (const chapter of chaptersToProcess) {
+        const lessonsToProcess = MAX_LESSONS 
+          ? chapter.lessons.slice(0, MAX_LESSONS)
+          : chapter.lessons;
+
+        for (const lesson of lessonsToProcess) {
+          setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+          const response = await generateLesson(chapter, lesson);
+          newGeneratedLessons[lesson.id] = response;
+          setGeneratedLessons({ ...newGeneratedLessons });
+        }
+      }
+    } catch (error) {
+      console.error('Failed to generate lessons:', error);
+      setError('Failed to generate some lessons');
+    }
+
+    setGeneratingLessons(false);
+    setCurrentGeneratingLesson('');
   };
 
   return (

@@ -6,7 +6,7 @@ export interface SyllabusLesson {
   description: string;
 }
 
-export interface SyllabusChapter {
+export interface Chapter {
   emoji: string;
   title: string;
   description: string;
@@ -20,7 +20,7 @@ export interface Syllabus {
   difficultyLevel: string;
   estimatedDuration: string;
   prerequisites: string[];
-  chapters: SyllabusChapter[];
+  chapters: Chapter[];
 }
 
 // Detailed lesson types

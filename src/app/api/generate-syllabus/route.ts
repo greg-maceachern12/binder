@@ -56,6 +56,15 @@ Return a JSON object without any markdown formatting, with 1 chapter and 1 lesso
 
     const content = completion.choices[0].message.content;
     try {
+
+      if (content === null) {
+        return NextResponse.json(
+          { error: 'No content received from OpenAI' },
+          { status: 500 }
+        );
+      }
+    
+
       const syllabus = JSON.parse(content);
       return NextResponse.json({ syllabus });
     } catch (parseError) {

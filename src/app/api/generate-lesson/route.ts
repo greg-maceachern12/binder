@@ -1,14 +1,18 @@
 // src/app/api/generate-lesson/route.ts
-import { NextResponse } from 'next/server';
-import { openai } from '@/app/lib/openai';
+import { NextResponse } from "next/server";
+import { openai } from "@/app/lib/openai";
 
 export async function POST(request: Request) {
   try {
-    const { lessonId, lessonTitle, chapterTitle, courseTitle } = await request.json();
-    
+    const { lessonId, lessonTitle, chapterTitle, courseTitle } =
+      await request.json();
+
     if (!lessonId || !lessonTitle || !chapterTitle || !courseTitle) {
       return NextResponse.json(
-        { error: 'Lesson ID, lesson title, chapter title, and course title are required' },
+        {
+          error:
+            "Lesson ID, lesson title, chapter title, and course title are required",
+        },
         { status: 400 }
       );
     }
@@ -70,32 +74,39 @@ Return a JSON object without any markdown formatting, following this structure:
     ]
   },
   "nextSteps": "Suggestions for what to learn next"
-}`
+}`,
         },
         {
           role: "user",
-          content: `Create detailed lesson content for the lesson "${lessonTitle}" from the chapter "${chapterTitle}" in the course "${courseTitle}". The lesson ID is ${lessonId}.`
-        }
+          content: `Create detailed lesson content for the lesson "${lessonTitle}" from the chapter "${chapterTitle}" in the course "${courseTitle}". The lesson ID is ${lessonId}.`,
+        },
       ],
       temperature: 1,
-      max_tokens: 5000
+      max_tokens: 5000,
     });
 
     const content = completion.choices[0].message.content;
     try {
+      if (content === null) {
+        return NextResponse.json(
+          { error: "No content received from OpenAI" },
+          { status: 500 }
+        );
+      }
+
       const lesson = JSON.parse(content);
       return NextResponse.json({ lesson });
     } catch (parseError) {
-      console.error('Error parsing JSON:', parseError);
+      console.error("Error parsing JSON:", parseError);
       return NextResponse.json(
-        { error: 'Failed to parse lesson JSON' },
+        { error: "Failed to parse lesson JSON" },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error('Error generating lesson:', error);
+    console.error("Error generating lesson:", error);
     return NextResponse.json(
-      { error: 'Failed to generate lesson' },
+      { error: "Failed to generate lesson" },
       { status: 500 }
     );
   }
