@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, SparklesIcon, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
-import { Syllabus } from '@/app/types';
 
 // Define type for topic categories
 type TopicCategoryKey = 'Technology' | 'Business' | 'Personal Development';
@@ -28,11 +28,8 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
   ]
 };
 
-interface Props {
-  onSyllabusGenerated: (syllabus: Syllabus) => void;
-}
-
-export default function SyllabusForm({ onSyllabusGenerated }: Props) {
+export default function SyllabusForm() {
+  const router = useRouter();
   const [topic, setTopic] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +42,8 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
     setError(null);
 
     try {
-      const response = await fetch('/api/generate-syllabus', {
+      // Generate syllabus
+      const syllabusResponse = await fetch('/api/generate-syllabus', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -53,13 +51,26 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
         body: JSON.stringify({ topic }),
       });
 
-      const data = await response.json();
+      const syllabusData = await syllabusResponse.json();
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate syllabus');
+      if (!syllabusResponse.ok) {
+        throw new Error(syllabusData.error || 'Failed to generate syllabus');
       }
 
-      onSyllabusGenerated(data.syllabus);
+      // Generate unique ID for the syllabus
+      const syllabusId = crypto.randomUUID();
+
+      // Store the syllabus data
+      await fetch(`/api/syllabus/${syllabusId}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ syllabus: syllabusData.syllabus }),
+      });
+
+      // Redirect to the syllabus page
+      router.push(`/syllabus/${syllabusId}`);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -103,7 +114,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="What would you like to learn?"
-                className="w-full pl-12 pr-4 py-4 text-base md:text-lg rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                className="w-full pl-12 pr-4 py-4 text-base text-black md:text-lg rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
                 disabled={isLoading}
               />
               {topic && !isLoading && (
