@@ -349,7 +349,7 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
   return (
     <button
       onClick={downloadCourse}
-      disabled={allLessonsGenerated}
+      disabled={!allLessonsGenerated}
       className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium transition-colors flex items-center justify-center gap-2"
     >
       <Download className="w-4 h-4" />

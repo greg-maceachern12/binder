@@ -108,7 +108,7 @@ export default function SyllabusDisplay({
                   Generate All Lessons
                 </button>
               )}
-              {!allLessonsGenerated && !generatingLessons && (
+              {allLessonsGenerated && !generatingLessons && (
                 <CourseDownloader
                   syllabus={syllabus}
                   generatedLessons={generatedLessons}
