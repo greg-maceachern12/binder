@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Clock, Target, X, ChevronRight, Menu } from 'lucide-react';
+import { Book, Clock, Target, X, Menu } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 import { DetailedLesson } from '@/app/types';
 
@@ -46,22 +46,29 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
         )}
 
         {/* Sidebar - Hidden on mobile by default */}
-        <div className={`fixed md:relative w-72 h-full bg-gray-50/50 backdrop-blur z-40 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
+        <div className={`fixed md:relative w-72 h-full bg-gray-50 border-r z-40 transform transition-transform duration-300 ease-in-out ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}>
-          <nav className="p-6">
-            <h2 className="text-xl text-gray-900 mb-6">Lesson Contents</h2>
+          {/* Sidebar Header */}
+          <div className="sticky top-0 bg-gray-50 border-b px-6 py-4 flex items-center justify-between">
+            <h2 className="text-sm font-medium text-gray-700">Contents</h2>
+            <button
+              onClick={() => setIsSidebarOpen(false)}
+              className="md:hidden p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Navigation */}
+          <nav className="px-3 py-4">
             {lesson.content.sections.map((section, i) => (
               <a
                 key={i}
                 href={`#section-${i}`}
                 onClick={() => setIsSidebarOpen(false)}
-                className="group flex items-center gap-2 py-3 px-4 text-gray-600 hover:text-blue-600 rounded-xl hover:bg-blue-50/50 transition-all duration-200"
+                className="block py-2 px-3 mb-1 text-sm text-gray-600 hover:text-gray-900 hover:bg-white rounded-lg transition-colors"
               >
-                <div className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
-                  {i + 1}
-                </div>
-                <span className="font-medium text-sm">{section.title}</span>
-                <ChevronRight className="w-4 h-4 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
+                {section.title}
               </a>
             ))}
           </nav>
@@ -71,6 +78,17 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
         <div className="flex-1 overflow-y-auto bg-white">
           {/* Header */}
           <div className="sticky top-0 z-20 bg-white/80 backdrop-blur-sm border-b">
+            {/* Close button container */}
+            <div className="absolute right-4 md:right-6 top-4">
+              <button
+                onClick={onClose}
+                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Menu and Audio player container */}
             <div className="px-4 md:px-6 py-4 flex items-center gap-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -82,12 +100,6 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                 lessonTitle={lesson.title}
                 lessonContent={formatLessonContent(lesson)}
               />
-              <button
-                onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
-              >
-                <X className="w-6 h-6" />
-              </button>
             </div>
           </div>
 
