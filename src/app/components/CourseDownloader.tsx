@@ -335,7 +335,7 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
     const url = window.URL.createObjectURL(content);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${syllabus.title}.zip`;
+    link.download = `DuotangAI - ${syllabus.title}.zip`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

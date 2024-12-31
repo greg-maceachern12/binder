@@ -5,26 +5,44 @@ import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'luc
 import { Syllabus } from '@/app/types';
 
 // Define type for topic categories
-type TopicCategoryKey = 'Technology' | 'Business' | 'Personal Development';
+type TopicCategoryKey = 'Finance' | 'Modern Business' | 'Urban Living' | 'Mind & Body' | 'Creative Writing' | 'Future Skills';
 
 const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
-  "Technology": [
-    "Machine Learning Fundamentals",
-    "Blockchain Technology",
-    "Modern Web Development",
-    "Cloud Computing Architecture"
+  "Finance": [
+    "Investment Basics",
+    "Personal Budgeting",
+    "Retirement Planning",
+    "Tax Strategies"
   ],
-  "Business": [
-    "Digital Marketing Strategies",
-    "Wealth Management",
-    "Sustainable Business Practices",
-    "Entrepreneurship Masterclass"
+  "Modern Business": [
+    "Product Management",
+    "Growth Strategy",
+    "Remote Leadership",
+    "Business Analytics"
   ],
-  "Personal Development": [
-    "Personal Finance Planning",
-    "Mental Health and Wellness",
-    "Leadership Skills",
-    "Time Management"
+  "Urban Living": [
+    "Urban Gardening",
+    "Home Organization",
+    "City Photography",
+    "Sustainable Living"
+  ],
+  "Mind & Body": [
+    "Sleep Science",
+    "Mindfulness Practice",
+    "Nutrition Science",
+    "Exercise Psychology"
+  ],
+  "Creative Writing": [
+    "Story Structure",
+    "Character Development",
+    "World Building",
+    "Dialogue Writing"
+  ],
+  "Future Skills": [
+    "AI Applications",
+    "Data Literacy",
+    "Digital Communication",
+    "Design Thinking"
   ]
 };
 
@@ -36,7 +54,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
   const [topic, setTopic] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Technology');
+  const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
   const topicInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {

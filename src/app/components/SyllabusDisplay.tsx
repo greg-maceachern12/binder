@@ -105,7 +105,7 @@ export default function SyllabusDisplay({
                   className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors flex items-center justify-center gap-2"
                 >
                   <Target className="w-4 h-4" />
-                  Generate 2 Lessons (Beta)
+                  Generate Lessons
                 </button>
               )}
               {allLessonsGenerated && !generatingLessons && (

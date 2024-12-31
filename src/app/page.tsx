@@ -37,7 +37,7 @@ export default function EnhancedHome() {
 
     setGeneratingLessons(true);
     const newGeneratedLessons: { [key: string]: DetailedLesson } = { ...generatedLessons };
-    const testMode = true;
+    const testMode = false;
     
     try {
       const chaptersToProcess = testMode 
