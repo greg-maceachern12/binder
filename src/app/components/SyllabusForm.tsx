@@ -109,7 +109,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
           <span className="text-blue-600">Learning Journey</span>
         </h1>
         <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-          Generate personalized learning paths for any topic with our AI-powered syllabus creator
+          Generate personalized learning paths for any topic with our AI-powered course creator
         </p>
       </div>
 

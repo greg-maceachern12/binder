@@ -15,7 +15,36 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Duotang AI - Learn Anything",
-  description: "AI Generated Lessons",
+  description: "AI Generated Courses",
+  applicationName: "Duotang AI",
+  authors: [{ name: "Duotang AI" }],
+  generator: "Next.js",
+  keywords: ["AI", "Learning", "Education", "AI Lessons"],
+  themeColor: '#ffffff', // Add your brand's theme color
+  manifest: '/manifest.json',
+  icons: {
+    apple: [
+      { url: '/logo.png' }
+    ],
+    icon: '/favicon.ico'
+  },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+  },
+  openGraph: {
+    title: 'Duotang AI - Learn Anything',
+    description: 'AI Generated Lessons',
+    images: ['/logo.png'],
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Duotang AI - Learn Anything',
+    description: 'AI Generated Lessons',
+    images: ['/logo.png'],
+  }
 };
 
 export default function RootLayout({
