@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
-import { Loader2, SparklesIcon, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
 import { Syllabus } from '@/app/types';
 
 // Define type for topic categories
@@ -78,8 +78,12 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
       <div className="text-center mb-8 md:mb-12">
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30"></div>
-          <div className="relative p-3 bg-gradient-to-br from-blue-500 to-blue-600 rounded-full mb-6">
-            <SparklesIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
+          <div className="relative p-3 rounded-full mb-6">
+            <img 
+              src="logo_trans.png" 
+              alt="Logo" 
+              className="w-16 h-16 md:w-24 md:h-24"
+            />
           </div>
         </div>
         <h1 className="text-3xl md:text-5xl text-gray-900 mb-4 leading-tight">
