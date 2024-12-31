@@ -165,51 +165,55 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
         </form>
       </div>
 
-      {/* Topic Categories */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8 md:mb-12 overflow-hidden">
-        <div className="flex items-center gap-2 mb-6">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
-          <h2 className="text-xl md:text-xl text-gray-900">Popular Topics</h2>
-        </div>
-        
-        {/* Category Tabs - Horizontal Scrollable on Mobile */}
-        <div className="flex gap-2 md:gap-4 mb-6 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 scroll-smooth">
-          {(Object.keys(TOPIC_CATEGORIES) as TopicCategoryKey[]).map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-sm transition-all duration-300 ${
-                activeCategory === category
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+{/* Topic Categories */}
+<div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8 md:mb-12">
+  <div className="flex items-center gap-2 mb-4 md:mb-6">
+    <TrendingUp className="w-5 h-5 text-blue-600" />
+    <h2 className="text-lg md:text-xl text-gray-900">Popular Topics</h2>
+  </div>
+  
+  {/* Category Tabs - Horizontal Scrollable on Mobile */}
+  <div className="-mx-4 px-4 md:mx-0 md:px-0">
+    <div className="flex gap-2 overflow-x-auto pb-4 md:pb-6 no-scrollbar">
+      {(Object.keys(TOPIC_CATEGORIES) as TopicCategoryKey[]).map((category) => (
+        <button
+          key={category}
+          onClick={() => setActiveCategory(category)}
+          className={`flex-shrink-0 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300 ${
+            activeCategory === category
+              ? 'bg-blue-600 text-white shadow-sm'
+              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+          }`}
+        >
+          {category}
+        </button>
+      ))}
+    </div>
+  </div>
 
-        {/* Topic Grid - Responsive Layout */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-          {TOPIC_CATEGORIES[activeCategory].map((topicItem) => (
-            <button
-              key={topicItem}
-              onClick={() => handleTopicSelect(topicItem)}
-              className="group p-4 text-left rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50 transition-all duration-300"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                  <BookType className="w-4 h-4" />
-                </div>
-                <div className="flex-1">
-                  <h3 className="text-gray-900 font-xs font-inter group-hover:text-blue-600 transition-colors">{topicItem}</h3>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
-              </div>
-            </button>
-          ))}
+  {/* Topic Grid - Responsive Layout */}
+  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+    {TOPIC_CATEGORIES[activeCategory].map((topicItem) => (
+      <button
+        key={topicItem}
+        onClick={() => handleTopicSelect(topicItem)}
+        className="group p-3 md:p-4 text-left rounded-lg md:rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-300"
+      >
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 md:w-8 md:h-8 rounded-md md:rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+            <BookType className="w-3.5 h-3.5 md:w-4 md:h-4" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm md:text-base text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+              {topicItem}
+            </h3>
+          </div>
+          <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
         </div>
-      </div>
+      </button>
+    ))}
+  </div>
+</div>
 
       {/* Features Grid - Responsive Layout */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">

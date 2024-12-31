@@ -28,3 +28,11 @@ body {
 .font-inter {
   font-family: var(--font-inter);
 }
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
