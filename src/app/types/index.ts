@@ -1,4 +1,5 @@
 // src/types/index.ts
+
 // Syllabus types
 export interface SyllabusLesson {
   id: string;
@@ -24,54 +25,79 @@ export interface Syllabus {
 }
 
 // Detailed lesson types
-export interface MainPoint {
-  title: string;
-  content: string;
-  examples: string[];
+export interface LessonExample {
+  scenario: string;
+  explanation: string;
 }
 
-export interface Exercise {
+export interface LessonSection {
   title: string;
-  description: string;
-  difficulty: string;
-  estimatedTime: string;
-  sampleSolution: string;
+  content: string;
+  keyPoints: string[];
+  examples: LessonExample[];
+}
+
+export interface PracticalExercise {
+  title: string;
+  type: string;
+  instructions: string;
+  tips: string[];
+  solution: string;
+}
+
+export interface ReviewQuestion {
+  question: string;
+  hints: string[];
+  sampleAnswer: string;
+}
+
+export interface PracticeProblem {
+  problem: string;
+  approach: string;
+  solution: string;
 }
 
 export interface Resource {
   title: string;
   type: string;
-  url?: string;
   description: string;
 }
 
-export interface PracticalApplication {
-  scenario: string;
-  application: string;
-}
-
-export interface QuizQuestion {
-  question: string;
-  options: string[];
-  correctAnswer: string;
-  explanation: string;
+export interface LessonMetadata {
+  duration: string;
+  difficulty: string;
+  prerequisites: string[];
+  learningObjectives: string[];
 }
 
 export interface LessonContent {
-  introduction: string;
-  mainPoints: MainPoint[];
-  exercises: Exercise[];
+  summary: string;
+  sections: LessonSection[];
+  practicalExercises: PracticalExercise[];
+}
+
+export interface LessonAssessment {
+  reviewQuestions: ReviewQuestion[];
+  practiceProblems: PracticeProblem[];
+}
+
+export interface LessonResources {
+  required: Resource[];
+  supplementary: Resource[];
+}
+
+export interface LessonNextSteps {
+  summary: string;
+  furtherLearning: string[];
+  applications: string[];
 }
 
 export interface DetailedLesson {
   id: string;
   title: string;
-  duration: string;
+  metadata: LessonMetadata;
   content: LessonContent;
-  resources: Resource[];
-  practicalApplications: PracticalApplication[];
-  quiz: {
-    questions: QuizQuestion[];
-  };
-  nextSteps: string;
+  assessment: LessonAssessment;
+  resources: LessonResources;
+  nextSteps: LessonNextSteps;
 }

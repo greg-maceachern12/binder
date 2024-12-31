@@ -1,6 +1,6 @@
 // src/app/api/generate-syllabus/route.ts
 import { NextResponse } from 'next/server';
-import { openai } from '@/app/lib/openai';
+import { openai, aiModel } from '@/app/lib/openai';
 
 export async function POST(request: Request) {
   try {
@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: aiModel,
       messages: [
         {
           role: "system",

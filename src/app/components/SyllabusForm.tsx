@@ -82,7 +82,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
             <SparklesIcon className="w-8 h-8 md:w-10 md:h-10 text-white" />
           </div>
         </div>
-        <h1 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4 leading-tight">
+        <h1 className="text-3xl md:text-5xl text-gray-900 mb-4 leading-tight">
           Discover Your Next <br className="md:hidden" />
           <span className="text-blue-600">Learning Journey</span>
         </h1>
@@ -103,7 +103,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
                 value={topic}
                 onChange={(e) => setTopic(e.target.value)}
                 placeholder="What would you like to learn?"
-                className="w-full pl-12 pr-4 py-4 text-base md:text-lg rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
                 disabled={isLoading}
               />
               {topic && !isLoading && (
@@ -147,7 +147,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8 md:mb-12 overflow-hidden">
         <div className="flex items-center gap-2 mb-6">
           <TrendingUp className="w-5 h-5 text-blue-600" />
-          <h2 className="text-lg md:text-xl font-semibold text-gray-900">Popular Topics</h2>
+          <h2 className="text-xl md:text-xl text-gray-900">Popular Topics</h2>
         </div>
         
         {/* Category Tabs - Horizontal Scrollable on Mobile */}
@@ -180,7 +180,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
                   <BookType className="w-4 h-4" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-medium text-gray-900 group-hover:text-blue-600 transition-colors">{topicItem}</h3>
+                  <h3 className="text-gray-900 font-xs font-inter group-hover:text-blue-600 transition-colors">{topicItem}</h3>
                 </div>
                 <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
               </div>
@@ -211,7 +211,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
           <div key={feature.title} 
                className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300">
             <div className="mb-4 text-2xl">{feature.icon}</div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+            <h3 className="text-xl text-gray-900 mb-2">
               {feature.title}
             </h3>
             <p className="text-gray-600 text-sm">{feature.description}</p>
