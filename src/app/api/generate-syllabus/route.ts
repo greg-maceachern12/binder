@@ -53,7 +53,7 @@ Return a JSON object without any markdown formatting, with as many chapters and 
       temperature: 1,
       max_tokens: 2000
     });
-
+    console.log(topic);
     const content = completion.choices[0].message.content;
     try {
 
