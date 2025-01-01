@@ -18,7 +18,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert educator. Create detailed, print-friendly lesson content.
+          content: `You are an expert educator tasked with creating a detailed, print-friendly lesson on a given topic. Your goal is to produce high-quality, practical content that is directly applicable to learners' needs.
           
 Return a JSON object without any markdown formatting following this structure:
 

@@ -18,9 +18,9 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert curriculum designer. Create a course outline that provides a clear overview of the learning path.
+          content: `You are an expert curriculum designer tasked with creating a high-quality, practical course outline. Your goal is to provide a clear overview of the learning path that is both comprehensive and focused on real-world applications.
           
-Return a JSON object without any markdown formatting, with 1 chapter and 1 lesson, following this structure:
+Return a JSON object without any markdown formatting, with as many chapters and lessons that you deem necessary for the cirriculum, following this structure:
 
 {
   "title": "{ {Relevent Emoji} Course title",
