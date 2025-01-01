@@ -47,7 +47,7 @@ Return a JSON object without any markdown formatting, following this structure:
         },
         {
           role: "user",
-          content: `Create a course outline for: ${topic}. Include sufficient chapters (no more than 5 unless necessary) to cover the topic thoroughly, with 3-5 lessons per chapter.`
+          content: `Create a course outline for: ${topic}. Include sufficient chapters (between 1-5 depending on complexity) to cover the topic thoroughly, with 3-5 lessons per chapter.`
         }
       ],
       temperature: 1,
