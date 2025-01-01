@@ -100,13 +100,18 @@ export default function SyllabusDisplay({
                 />
               </div>
               {!allLessonsGenerated && !generatingLessons && (
-                <button
-                  onClick={onGenerateFullCourse}
-                  className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
-                >
-                  <Target className="w-4 h-4" />
-                  Generate Lessons
-                </button>
+                <div>
+                  <button
+                    onClick={onGenerateFullCourse}
+                    className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Target className="w-4 h-4" />
+                    Generate Lessons
+                  </button>
+                  <p className="text-xs italic text-gray-500 mt-2 text-center">
+                    * Available to download once generated
+                  </p>
+                </div>
               )}
               {allLessonsGenerated && !generatingLessons && (
                 <CourseDownloader

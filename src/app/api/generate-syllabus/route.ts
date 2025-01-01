@@ -20,7 +20,7 @@ export async function POST(request: Request) {
           role: "system",
           content: `You are an expert curriculum designer tasked with creating a high-quality, practical course outline. Your goal is to provide a clear overview of the learning path that is both comprehensive and focused on real-world applications.
           
-Return a JSON object without any markdown formatting, with as many chapters and lessons that you deem necessary for the cirriculum, following this structure:
+Return a JSON object without any markdown formatting, following this structure:
 
 {
   "title": "{ {Relevent Emoji} Course title",
@@ -47,7 +47,7 @@ Return a JSON object without any markdown formatting, with as many chapters and 
         },
         {
           role: "user",
-          content: `Create a course outline for: ${topic}. Include sufficient chapters to cover the topic thoroughly, with 3-5 lessons per chapter.`
+          content: `Create a course outline for: ${topic}. Include sufficient chapters (no more than 5 unless necessary) to cover the topic thoroughly, with 3-5 lessons per chapter.`
         }
       ],
       temperature: 1,
