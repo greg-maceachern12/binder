@@ -23,7 +23,7 @@ export async function POST(request: Request) {
 Return a JSON object without any markdown formatting, with 1 chapter and 1 lesson, following this structure:
 
 {
-  "title": "Course title",
+  "title": "{ {Relevent Emoji} Course title",
   "description": "Brief course overview",
   "difficultyLevel": "Beginner/Intermediate/Advanced",
   "estimatedDuration": "Total course duration",
