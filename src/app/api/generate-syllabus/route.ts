@@ -53,8 +53,8 @@ Return a JSON object without any markdown formatting, following this structure:
       temperature: 1,
       max_tokens: 2000
     });
-    console.log(topic);
     const content = completion.choices[0].message.content;
+    console.log(content);
     try {
 
       if (content === null) {
