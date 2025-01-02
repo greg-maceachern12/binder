@@ -108,9 +108,6 @@ export default function SyllabusDisplay({
                     <Target className="w-4 h-4" />
                     Generate Lessons
                   </button>
-                  <p className="text-xs italic text-gray-500 mt-2 text-center">
-                    * Available to download once generated
-                  </p>
                 </div>
               )}
               {allLessonsGenerated && !generatingLessons && (
@@ -125,6 +122,9 @@ export default function SyllabusDisplay({
                   <span className="text-xs md:text-sm">Generating lessons...</span>
                 </div>
               )}
+              <p className="text-xs italic text-gray-500 mt-2 text-center">
+                * Available to download once generated
+              </p>
             </div>
           </div>
 
