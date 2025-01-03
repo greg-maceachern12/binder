@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
-import { Syllabus } from '@/app/types';
 
 // Define type for topic categories
 type TopicCategoryKey = 'Finance' | 'Modern Business' | 'Urban Living' | 'Mind & Body' | 'Creative Writing' | 'Future Skills';
@@ -46,11 +46,8 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
   ]
 };
 
-interface Props {
-  onSyllabusGenerated: (syllabus: Syllabus) => void;
-}
-
-export default function SyllabusForm({ onSyllabusGenerated }: Props) {
+export default function SyllabusForm() {
+  const router = useRouter();
   const [topic, setTopic] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,10 +74,10 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
         throw new Error(data.error || 'Failed to generate syllabus');
       }
 
-      onSyllabusGenerated(data.syllabus);
+      // Redirect to the syllabus page using the returned UUID
+      router.push(`/syllabus/${data.slug}`);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
-    } finally {
       setIsLoading(false);
     }
   };

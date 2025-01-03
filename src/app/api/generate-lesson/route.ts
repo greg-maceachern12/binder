@@ -1,6 +1,6 @@
-// src/app/api/generate-lesson/route.ts
 import { NextResponse } from "next/server";
 import { openai, aiModel } from "@/app/lib/openai";
+import { supabase } from '@/app/lib/supabase/client';
 
 export async function POST(request: Request) {
   try {
@@ -106,6 +106,18 @@ Return a JSON object without any markdown formatting following this structure:
     }
 
     const lesson = JSON.parse(content);
+
+    // Save the generated lesson content to Supabase
+    const { error: updateError } = await supabase
+      .from('lessons')
+      .update({ content: lesson })
+      .eq('id', lessonId);
+
+    if (updateError) {
+      console.error('Error saving lesson:', updateError);
+      return NextResponse.json({ error: "Failed to save lesson" }, { status: 500 });
+    }
+
     return NextResponse.json({ lesson });
   } catch (error) {
     console.error("Error:", error);
