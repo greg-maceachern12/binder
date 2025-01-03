@@ -1,8 +1,8 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
-import { Syllabus } from '@/app/types';
 
 // Define type for topic categories
 type TopicCategoryKey = 'Finance' | 'Modern Business' | 'Urban Living' | 'Mind & Body' | 'Creative Writing' | 'Future Skills';
@@ -46,14 +46,12 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
   ]
 };
 
-interface Props {
-  onSyllabusGenerated: (syllabus: Syllabus) => void;
-}
-
-export default function SyllabusForm({ onSyllabusGenerated }: Props) {
+export default function SyllabusForm() {
   const [topic, setTopic] = useState('');
+  const [successTopic, setSuccessTopic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [syllabusUrl, setSyllabusUrl] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
   const topicInputRef = useRef<HTMLInputElement>(null);
 
@@ -77,7 +75,9 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
         throw new Error(data.error || 'Failed to generate syllabus');
       }
 
-      onSyllabusGenerated(data.syllabus);
+      // Store the syllabus URL
+      setSyllabusUrl(`/syllabus/${data.slug}`);
+      setSuccessTopic(topic);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -97,14 +97,17 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">
-            <img
-              src="logo_trans.png"
+            <Image
+              src="/logo_trans.png"
               alt="Logo"
+              width={96}
+              height={96}
               className="w-16 h-16 md:w-24 md:h-24"
+              priority
             />
           </div>
         </div>
-        <h1 className="text-3xl md:text-5xl text-gray-900 mb-4 leading-tight">
+        <h1 className="text-4xl md:text-5xl text-gray-900 mb-4 leading-tight">
           Discover Your Next <br className="md:hidden" />
           <span className="animate-gradient bg-gradient-to-r from-blue-600 via-yellow-600 to-pink-500 bg-clip-text text-transparent bg-300%">
             Learning Journey
@@ -164,6 +167,25 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
               <p>{error}</p>
             </div>
           )}
+          {syllabusUrl && (
+            <div className="mt-4 p-4 bg-green-50 border border-green-100 text-green-600 rounded-lg text-sm flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
+              <div className="flex items-center gap-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <p className="font-medium">Your course on {successTopic} is ready!</p>
+              </div>
+              <a
+                href={syllabusUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center flex items-center justify-center gap-2"
+              >
+                <BookOpen className="w-4 h-4" />
+                <span>View Course</span>
+              </a>
+            </div>
+          )}
         </form>
       </div>
 
@@ -205,7 +227,7 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
                   <BookType className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm md:text-base text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xs font-inter text-gray-900 truncate group-hover:text-blue-600 transition-colors">
                     {topicItem}
                   </h3>
                 </div>
@@ -235,12 +257,12 @@ export default function SyllabusForm({ onSyllabusGenerated }: Props) {
             description: "Monitor your learning journey"
           }
         ].map((feature) => (
-          <div key={feature.title}
-            className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300">
+          <div
+            key={feature.title}
+            className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300"
+          >
             <div className="mb-4 text-2xl">{feature.icon}</div>
-            <h3 className="text-xl text-gray-900 mb-2">
-              {feature.title}
-            </h3>
+            <h3 className="text-xl text-gray-900 mb-2">{feature.title}</h3>
             <p className="text-gray-600 text-sm">{feature.description}</p>
           </div>
         ))}
