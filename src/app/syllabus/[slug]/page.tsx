@@ -6,7 +6,6 @@ import { supabase } from '@/app/lib/supabase/client';
 import { Syllabus, DetailedLesson, Chapter, SyllabusLesson } from '@/app/types';
 import { DbSyllabus, DbChapter, DbLesson } from '@/app/types/database';
 import SyllabusDisplay from '@/app/components/SyllabusDisplay';
-import Head from 'next/head';
 
 export default function SyllabusPage() {
     const params = useParams();
@@ -126,45 +125,41 @@ export default function SyllabusPage() {
     }
 
     return (
-        <>
-            <Head>
-                <title>{syllabus.title} - Primer AI</title>
-            </Head>
-            <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-                <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-                    <SyllabusDisplay
-                        syllabus={syllabus}
-                        onGenerateFullCourse={async () => {
-                            setGeneratingLessons(true);
 
-                            try {
-                                const newGeneratedLessons = { ...generatedLessons };
+        <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+                <SyllabusDisplay
+                    syllabus={syllabus}
+                    onGenerateFullCourse={async () => {
+                        setGeneratingLessons(true);
 
-                                for (const chapter of syllabus.chapters) {
-                                    for (const lesson of chapter.lessons) {
-                                        if (newGeneratedLessons[lesson.id]) {
-                                            continue;
-                                        }
+                        try {
+                            const newGeneratedLessons = { ...generatedLessons };
 
-                                        setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
-                                        const response = await generateLesson(chapter, lesson);
-                                        newGeneratedLessons[lesson.id] = response;
-                                        setGeneratedLessons({ ...newGeneratedLessons });
+                            for (const chapter of syllabus.chapters) {
+                                for (const lesson of chapter.lessons) {
+                                    if (newGeneratedLessons[lesson.id]) {
+                                        continue;
                                     }
-                                }
-                            } catch (error) {
-                                console.error('Failed to generate lessons:', error);
-                            }
 
-                            setGeneratingLessons(false);
-                            setCurrentGeneratingLesson('');
-                        }}
-                        generatingLessons={generatingLessons}
-                        currentGeneratingLesson={currentGeneratingLesson}
-                        generatedLessons={generatedLessons}
-                    />
-                </div>
-            </main>
-        </>
+                                    setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+                                    const response = await generateLesson(chapter, lesson);
+                                    newGeneratedLessons[lesson.id] = response;
+                                    setGeneratedLessons({ ...newGeneratedLessons });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Failed to generate lessons:', error);
+                        }
+
+                        setGeneratingLessons(false);
+                        setCurrentGeneratingLesson('');
+                    }}
+                    generatingLessons={generatingLessons}
+                    currentGeneratingLesson={currentGeneratingLesson}
+                    generatedLessons={generatedLessons}
+                />
+            </div>
+        </main>
     );
 }
