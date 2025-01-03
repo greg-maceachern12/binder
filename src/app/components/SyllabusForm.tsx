@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useRef } from 'react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
 
@@ -94,10 +95,13 @@ export default function SyllabusForm() {
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">
-            <img
-              src="logo_trans.png"
+            <Image
+              src="/logo_trans.png" // Note the leading slash for public directory
               alt="Logo"
+              width={96} // 24 * 4 (matches md:w-24)
+              height={96} // 24 * 4 (matches md:h-24)
               className="w-16 h-16 md:w-24 md:h-24"
+              priority // Since this is above the fold
             />
           </div>
         </div>
@@ -179,8 +183,8 @@ export default function SyllabusForm() {
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 className={`flex-shrink-0 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300 ${activeCategory === category
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 {category}
