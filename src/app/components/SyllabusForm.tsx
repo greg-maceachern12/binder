@@ -48,6 +48,7 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 
 export default function SyllabusForm() {
   const [topic, setTopic] = useState('');
+  const [successTopic, setSuccessTopic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syllabusUrl, setSyllabusUrl] = useState<string | null>(null);
@@ -76,6 +77,7 @@ export default function SyllabusForm() {
 
       // Store the syllabus URL
       setSyllabusUrl(`/syllabus/${data.slug}`);
+      setSuccessTopic(topic);
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {
@@ -171,7 +173,7 @@ export default function SyllabusForm() {
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="font-medium">Your course on {topic} is ready!</p>
+                <p className="font-medium">Your course on {successTopic} is ready!</p>
               </div>
               <a
                 href={syllabusUrl}
