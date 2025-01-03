@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft } from 'lucide-react';
+import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2 } from 'lucide-react';
 import { Syllabus, DetailedLesson } from '@/app/types';
 import CourseDownloader from './CourseDownloader';
 import LessonViewer from './LessonViewer';
@@ -21,6 +21,7 @@ export default function SyllabusDisplay({
   generatedLessons
 }: Props) {
   const [selectedLessonId, setSelectedLessonId] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const router = useRouter();
 
   const allLessonsGenerated = syllabus.chapters.every(chapter =>
@@ -56,9 +57,22 @@ export default function SyllabusDisplay({
             {/* Content Container */}
             <div className="relative">
               <div className="flex flex-col mb-6 md:mb-8">
-                <h1 className="text-2xl md:text-4xl text-indigo-950 mb-2 md:mb-3">
-                  {syllabus.title}
-                </h1>
+                <div className="flex justify-between items-start">
+                  <h1 className="text-2xl md:text-4xl text-indigo-950 mb-2 md:mb-3">
+                    {syllabus.title}
+                  </h1>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-white/80 backdrop-blur-sm rounded-lg text-indigo-600 hover:bg-white/90 transition-all text-sm border border-indigo-100"
+                  >
+                    <Share2 className="w-4 h-4" />
+                    <span>{copied ? 'Copied!' : 'Copy Link'}</span>
+                  </button>
+                </div>
                 <p className="text-sm text-indigo-700 leading-relaxed">
                   {syllabus.description}
                 </p>
@@ -115,7 +129,7 @@ export default function SyllabusDisplay({
                 <div>
                   <button
                     onClick={onGenerateFullCourse}
-                    className="w-full py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                    className="mx-auto px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <Target className="w-4 h-4" />
                     {completedLessons === 0 ? 'Generate Lessons' : 'Resume Generation'}
