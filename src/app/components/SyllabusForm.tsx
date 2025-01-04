@@ -127,30 +127,37 @@ export default function SyllabusForm() {
       <div className="max-w-3xl mx-auto mb-8 md:mb-12">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex flex-col gap-4">
-            {/* Course Type Selection */}
-            {/* Course Type Selection */}
-            <div className="flex gap-2 justify-center mb-4">
-              <button
-                type="button"
-                onClick={() => setCourseType('primer')}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'primer'
+            {/* Course Type Selection with Description */}
+            <div className="flex flex-col items-center gap-2">
+              <div className="flex gap-2 justify-center">
+                <button
+                  type="button"
+                  onClick={() => setCourseType('primer')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'primer'
                     ? 'bg-white text-gray-900 border border-gray-200'
                     : 'bg-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                  }`}
-              >
-                🚀 Quick Primer
-              </button>
+                    }`}
+                >
+                  🚀 Quick Primer
+                </button>
 
-              <button
-                type="button"
-                onClick={() => setCourseType('fullCourse')}
-                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'fullCourse'
+                <button
+                  type="button"
+                  onClick={() => setCourseType('fullCourse')}
+                  className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'fullCourse'
                     ? 'bg-black text-white border border-gray-900'
                     : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                  }`}
-              >
-                🎓 Full Course
-              </button>
+                    }`}
+                >
+                  🎓 Full Course
+                </button>
+              </div>
+              <p className="text-sm text-gray-600 text-center transition-all duration-300">
+                {courseType === 'primer'
+                  ? "A high-level crash course covering key concepts and fundamentals"
+                  : "A comprehensive curriculum with detailed lessons and exercises"
+                }
+              </p>
             </div>
 
             {/* Search Input and Submit */}
