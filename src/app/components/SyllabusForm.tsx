@@ -4,6 +4,8 @@ import React, { useState, useRef } from 'react';
 import Image from 'next/image';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
 
+type CourseType = 'primer' | 'fullCourse';
+
 // Define type for topic categories
 type TopicCategoryKey = 'Finance' | 'Modern Business' | 'Urban Living' | 'Mind & Body' | 'Creative Writing' | 'Future Skills';
 
@@ -48,6 +50,7 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 
 export default function SyllabusForm() {
   const [topic, setTopic] = useState('');
+  const [courseType, setCourseType] = useState<CourseType>('primer');
   const [successTopic, setSuccessTopic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +69,10 @@ export default function SyllabusForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({
+          topic,
+          courseType // Add this to differentiate in the API
+        }),
       });
 
       const data = await response.json();
@@ -75,7 +81,6 @@ export default function SyllabusForm() {
         throw new Error(data.error || 'Failed to generate syllabus');
       }
 
-      // Store the syllabus URL
       setSyllabusUrl(`/syllabus/${data.slug}`);
       setSuccessTopic(topic);
     } catch (error) {
@@ -121,59 +126,92 @@ export default function SyllabusForm() {
       {/* Search Form */}
       <div className="max-w-3xl mx-auto mb-8 md:mb-12">
         <form onSubmit={handleSubmit} className="relative">
-          <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-0">
-            <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-              <input
-                ref={topicInputRef}
-                type="text"
-                value={topic}
-                onChange={(e) => setTopic(e.target.value)}
-                placeholder="What would you like to learn?"
-                className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
-                disabled={isLoading}
-              />
-              {topic && !isLoading && (
-                <button
-                  type="button"
-                  onClick={() => setTopic('')}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  ×
-                </button>
-              )}
+          <div className="flex flex-col gap-4">
+            {/* Course Type Selection */}
+            {/* Course Type Selection */}
+            <div className="flex gap-2 justify-center mb-4">
+              <button
+                type="button"
+                onClick={() => setCourseType('primer')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'primer'
+                    ? 'bg-white text-gray-900 border border-gray-200'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
+              >
+                🚀 Quick Primer
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCourseType('fullCourse')}
+                className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'fullCourse'
+                    ? 'bg-black text-white border border-gray-900'
+                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                  }`}
+              >
+                🎓 Full Course
+              </button>
             </div>
-            <button
-              type="submit"
-              disabled={!topic || isLoading}
-              className="w-full sm:w-auto px-6 py-4 bg-blue-600 text-white rounded-xl sm:rounded-l-none hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 min-w-[140px]"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Generating...</span>
-                </>
-              ) : (
-                <>
-                  <BookOpen className="w-5 h-5" />
-                  <span>Generate</span>
-                </>
-              )}
-            </button>
+
+            {/* Search Input and Submit */}
+            <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-0">
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  ref={topicInputRef}
+                  type="text"
+                  value={topic}
+                  onChange={(e) => setTopic(e.target.value)}
+                  placeholder="What would you like to learn?"
+                  className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                  disabled={isLoading}
+                />
+                {topic && !isLoading && (
+                  <button
+                    type="button"
+                    onClick={() => setTopic('')}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  >
+                    ×
+                  </button>
+                )}
+              </div>
+              <button
+                type="submit"
+                disabled={!topic || isLoading}
+                className="w-full sm:w-auto px-6 py-4 bg-blue-600 text-white rounded-xl sm:rounded-l-none hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 min-w-[140px]"
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span>Generating...</span>
+                  </>
+                ) : (
+                  <>
+                    <BookOpen className="w-5 h-5" />
+                    <span>Generate</span>
+                  </>
+                )}
+              </button>
+            </div>
           </div>
+
+          {/* Error Message */}
           {error && (
             <div className="mt-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-start gap-2">
               <div className="w-5 h-5 rounded-full border-2 border-red-600 flex items-center justify-center flex-shrink-0 mt-0.5">!</div>
               <p>{error}</p>
             </div>
           )}
+
+          {/* Success Message */}
           {syllabusUrl && (
             <div className="mt-4 p-4 bg-green-50 border border-green-100 text-green-600 rounded-lg text-sm flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
               <div className="flex items-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                <p className="font-medium">Your course on {successTopic} is ready!</p>
+                <p className="font-medium">Your {courseType === 'primer' ? 'quick primer' : 'full course'} on {successTopic} is ready!</p>
               </div>
               <a
                 href={syllabusUrl}
@@ -204,8 +242,8 @@ export default function SyllabusForm() {
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 className={`flex-shrink-0 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300 ${activeCategory === category
-                    ? 'bg-blue-600 text-white shadow-sm'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white shadow-sm'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 {category}

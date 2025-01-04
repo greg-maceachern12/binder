@@ -2,10 +2,13 @@ import { NextResponse } from 'next/server';
 import { openai, aiModel } from '@/app/lib/openai';
 import { supabase } from '@/app/lib/supabase/client';
 import { SyllabusLesson } from '@/app/types';
+import { COURSE_TEMPLATES } from '@/app/lib/templates';
+
+
 
 export async function POST(request: Request) {
   try {
-    const { topic } = await request.json();
+    const { topic, courseType = 'primer' }: { topic: string; courseType: keyof typeof COURSE_TEMPLATES } = await request.json();
     
     if (!topic) {
       return NextResponse.json(
@@ -19,40 +22,15 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert curriculum designer tasked with creating a high-quality, practical course outline. Your goal is to provide a clear overview of the learning path that is both comprehensive and focused on real-world applications.
-          
-Return a JSON object without any markdown formatting, following this structure:
-
-{
-  "title": "{ {Relevent Emoji} Course title",
-  "description": "Brief course overview",
-  "difficultyLevel": "Beginner/Intermediate/Advanced",
-  "estimatedDuration": "Total course duration",
-  "prerequisites": ["prerequisite 1", "prerequisite 2"],
-  "chapters": [
-    {
-      "emoji": "📚",
-      "title": "Chapter title",
-      "description": "Brief chapter description",
-      "estimatedDuration": "2 hours",
-      "lessons": [
-        {
-          "id": "unique-lesson-id",
-          "title": "Lesson title",
-          "description": "Brief lesson overview"
-        }
-      ]
-    }
-  ]
-}`
+          content: COURSE_TEMPLATES[courseType]
         },
         {
           role: "user",
-          content: `Create a course outline for: ${topic}. Include sufficient chapters (between 1-5 depending on complexity) with 3-5 lessons per chapter.`
+          content: `Create a ${courseType === 'primer' ? 'focused quick-start guide' : 'comprehensive course outline'} for: ${topic}`
         }
       ],
       temperature: 1,
-      max_tokens: 2000
+      max_tokens: courseType === 'primer' ? 1000 : 3000
     });
 
     const content = completion.choices[0].message.content;
