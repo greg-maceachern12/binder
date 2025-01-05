@@ -51,7 +51,7 @@ export default function SyllabusDisplay({
         {/* Rest of the component remains the same */}
         {/* Main Header Section */}
         <div className="relative">
-        <div className="relative px-6 md:px-8 py-8 md:py-10 bg-gradient-to-br from-orange-50 via-rose-50 to-purple-100">
+          <div className="relative px-6 md:px-8 py-8 md:py-10 bg-gradient-to-br from-orange-50 via-rose-50 to-purple-100">
             <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" />
 
             {/* Content Container */}
@@ -156,7 +156,7 @@ export default function SyllabusDisplay({
                     </span>
                   </div>
                   <div className="text-xs text-gray-500 text-center">
-                    Please don't close this page
+                    Please don&apos;t close this page
                   </div>
                 </div>
               )}
