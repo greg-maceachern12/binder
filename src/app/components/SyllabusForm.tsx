@@ -62,6 +62,9 @@ export default function SyllabusForm() {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    // Clear success message when starting new generation
+    setSyllabusUrl(null);
+    setSuccessTopic('');
 
     try {
       const response = await fetch('/api/generate-syllabus', {
@@ -71,7 +74,7 @@ export default function SyllabusForm() {
         },
         body: JSON.stringify({
           topic,
-          courseType // Add this to differentiate in the API
+          courseType
         }),
       });
 

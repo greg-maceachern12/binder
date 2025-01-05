@@ -38,7 +38,7 @@ export default function SyllabusDisplay({
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-0">
       {/* Back Button */}
-      <button 
+      <button
         onClick={() => router.push('/')}
         className="flex items-center gap-2 text-indigo-600 hover:text-indigo-700 transition-colors mb-4 md:mb-6"
       >
@@ -51,7 +51,7 @@ export default function SyllabusDisplay({
         {/* Rest of the component remains the same */}
         {/* Main Header Section */}
         <div className="relative">
-          <div className="relative px-6 md:px-8 py-8 md:py-10 bg-gradient-to-br from-blue-50 via-indigo-100 to-blue-200">
+        <div className="relative px-6 md:px-8 py-8 md:py-10 bg-gradient-to-br from-orange-50 via-rose-50 to-purple-100">
             <div className="absolute inset-0 bg-white/40 backdrop-blur-sm" />
 
             {/* Content Container */}
@@ -126,14 +126,19 @@ export default function SyllabusDisplay({
                 />
               </div>
               {!allLessonsGenerated && !generatingLessons && (
-                <div>
+                <div className="space-y-3">
                   <button
                     onClick={onGenerateFullCourse}
                     className="mx-auto px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
                     <Target className="w-4 h-4" />
-                    {completedLessons === 0 ? 'Generate Lessons' : 'Resume Generation'}
+                    {completedLessons === 0 ? 'Generate Full Course' : 'Resume Generation'}
                   </button>
+                  <p className="text-xs text-gray-600 text-center">
+                    Estimated time: {(totalLessons - completedLessons) * 10} seconds
+                    <br />
+                    Please keep this page open until generation is complete
+                  </p>
                 </div>
               )}
               {allLessonsGenerated && !generatingLessons && (
@@ -143,14 +148,23 @@ export default function SyllabusDisplay({
                 />
               )}
               {generatingLessons && (
-                <div className="flex items-center justify-center gap-2 md:gap-3 text-indigo-600">
-                  <Loader2 className="w-4 h-4 md:w-5 md:h-5 animate-spin" />
-                  <span className="text-xs md:text-sm">Generating lessons...</span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-center gap-3 text-indigo-600">
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    <span className="text-sm font-medium">
+                      Generating {completedLessons}/{totalLessons} • ~{(totalLessons - completedLessons) * 10}s
+                    </span>
+                  </div>
+                  <div className="text-xs text-gray-500 text-center">
+                    Please don't close this page
+                  </div>
                 </div>
               )}
-              <p className="text-xs italic text-gray-500 mt-2 text-center">
-                * Available to download once generated
-              </p>
+              {/* {!allLessonsGenerated && (
+                <p className="text-xs italic text-gray-500 mt-2 text-center">
+                  * Course will be available to download once generated
+                </p>
+              )} */}
             </div>
           </div>
 

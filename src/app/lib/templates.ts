@@ -14,7 +14,7 @@ Guidelines for content:
 Return a JSON object without any markdown formatting, following this structure:
 
 {
-    "title": "🚀 Quick Start: {Topic}",
+    "title": "{Relevent Emoji} {Course Title} - Primer",
     "description": "A focused introduction to get you started quickly with {topic}",
     "difficultyLevel": "Beginner",
     "estimatedDuration": "2-3 hours",
@@ -68,7 +68,7 @@ Key focus areas:
 Return a JSON object without any markdown formatting, following this structure:
 
 {
-    "title": "🎓 Complete {Topic} Mastery",
+    "title": "{Relevent Emoji} {Course Title} - Complete Course",
     "description": "A comprehensive course covering everything from fundamentals to advanced applications of {topic}",
     "difficultyLevel": "Beginner to Advanced",
     "estimatedDuration": "8-10 weeks",
