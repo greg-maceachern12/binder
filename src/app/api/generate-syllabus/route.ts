@@ -4,7 +4,23 @@ import { supabase } from '@/app/lib/supabase/client';
 import { SyllabusLesson } from '@/app/types';
 import { COURSE_TEMPLATES } from '@/app/lib/templates';
 
-
+async function getUnsplashImage(query: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.unsplash.com/photos/random?query=${encodeURIComponent(query)}&orientation=landscape&content_filter=high`,
+      {
+        headers: {
+          'Authorization': `Client-ID ${process.env.NEXT_PUBLIC_UNSPLASH_ACCESS_KEY}`
+        }
+      }
+    );
+    const photo = await response.json();
+    return photo?.urls?.regular || null;
+  } catch (error) {
+    console.error('Error fetching Unsplash image:', error);
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -42,6 +58,7 @@ export async function POST(request: Request) {
     }
 
     const syllabus = JSON.parse(content);
+    const imageUrl = await getUnsplashImage(`${syllabus.title} background`);
 
     // Save syllabus to Supabase
     const { data: syllabusData, error: syllabusError } = await supabase
@@ -51,7 +68,8 @@ export async function POST(request: Request) {
         description: syllabus.description,
         difficulty_level: syllabus.difficultyLevel,
         estimated_duration: syllabus.estimatedDuration,
-        prerequisites: syllabus.prerequisites
+        prerequisites: syllabus.prerequisites,
+        image_url: imageUrl  // Add the image URL to the database
       })
       .select()
       .single();

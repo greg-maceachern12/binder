@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink } from 'lucide-react';
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -287,34 +287,47 @@ export default function SyllabusForm() {
       </div>
 
       {/* Features Grid - Responsive Layout */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {[
-          {
-            icon: "✨",
-            title: "AI-Powered Learning",
-            description: "Customized syllabi created by advanced AI"
-          },
-          {
-            icon: "📚",
-            title: "Comprehensive Modules",
-            description: "Structured chapters with detailed lessons"
-          },
-          {
-            icon: "📈",
-            title: "Track Progress",
-            description: "Monitor your learning journey"
-          }
-        ].map((feature) => (
-          <div
-            key={feature.title}
-            className="p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300"
-          >
-            <div className="mb-4 text-2xl">{feature.icon}</div>
-            <h3 className="text-xl text-gray-900 mb-2">{feature.title}</h3>
-            <p className="text-gray-600 text-sm">{feature.description}</p>
-          </div>
-        ))}
+      <div>
+        <div className="mb-6 flex items-center gap-2">
+          <BookOpen className="w-5 h-5 text-blue-600" />
+          <h2 className="text-lg md:text-xl text-gray-900">Featured Courses</h2>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+          {[
+            {
+              title: "🏠 DIY A-Frame Constructions",
+              description: "Learn how to design and build your own A-frame structure, from planning and materials selection to construction techniques and finishing touches.",
+              href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b"
+            },
+            {
+              title: "💰 Wealth Management - Primer",
+              description: "A focused introduction to get you started quickly with wealth management",
+              href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c"
+            },
+            {
+              title: "🌱 Starting a Microgreens Garden",
+              description: "A comprehensive course covering everything from fundamentals to advanced applications of growing microgreens",
+              href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29"
+            }
+          ].map((feature) => (
+            <a
+              key={feature.title}
+              href={feature.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300 block relative"
+            >
+              <div className="absolute top-4 right-4">
+                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+              </div>
+              <h3 className="text-xl text-gray-900 mb-2 pr-8">{feature.title}</h3>
+              <p className="text-gray-600 text-sm">{feature.description}</p>
+            </a>
+          ))}
+        </div>
       </div>
+
     </div>
   );
 }

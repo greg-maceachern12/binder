@@ -49,6 +49,7 @@ export default function SyllabusPage() {
                 difficultyLevel: dbSyllabus.difficulty_level,
                 estimatedDuration: dbSyllabus.estimated_duration,
                 prerequisites: dbSyllabus.prerequisites || [],
+                image_url: dbSyllabus.image_url || undefined,  // Add this line
                 chapters: (dbSyllabus.chapters as DbChapter[])
                     .sort((a, b) => a.order_index - b.order_index)
                     .map((chapter) => ({

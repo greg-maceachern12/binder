@@ -22,6 +22,7 @@ export interface Syllabus {
   estimatedDuration: string;
   prerequisites: string[];
   chapters: Chapter[];
+  image_url?: string;  // Added this field
 }
 
 // Detailed lesson types

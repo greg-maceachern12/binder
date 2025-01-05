@@ -7,12 +7,13 @@ export interface DbSyllabus {
     difficulty_level: string;
     estimated_duration: string;
     prerequisites: string[];
+    image_url: string | null;  // Added this field
     created_at: string;
     updated_at: string;
     chapters: DbChapter[];
-  }
+}
   
-  export interface DbChapter {
+export interface DbChapter {
     id: string;
     syllabus_id: string;
     title: string;
@@ -23,15 +24,15 @@ export interface DbSyllabus {
     created_at: string;
     updated_at: string;
     lessons: DbLesson[];
-  }
+}
   
-  export interface DbLesson {
+export interface DbLesson {
     id: string;
     chapter_id: string;
     title: string;
     description: string | null;
     order_index: number;
-    content: DetailedLesson | null; // This can be typed more specifically if needed
+    content: DetailedLesson | null;
     created_at: string;
     updated_at: string;
-  }
+}
