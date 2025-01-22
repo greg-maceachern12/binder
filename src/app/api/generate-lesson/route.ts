@@ -29,15 +29,15 @@ Return a JSON object without any markdown formatting following this structure:
     "duration": "Estimated completion time",
     "difficulty": "Beginner/Intermediate/Advanced",
     "prerequisites": ["Required knowledge"],
-    "learningObjectives": ["What students will learn"]
+    "learningObjectives": ["What students will learn. Clear and concise"]
   },
   "content": {
-    "summary": "Brief overview of key concepts",
+    "summary": "Brief overview of key concepts, focusing on clarity",
     "sections": [
       {
         "title": "Section heading",
         "content": "Main content text with formatting",
-        "keyPoints": ["Important points to remember"],
+        "keyPoints": ["Important points to remember that many students might forget or overlook"],
         "examples": [
           {
             "scenario": "Example context",
@@ -76,12 +76,14 @@ Return a JSON object without any markdown formatting following this structure:
     "required": [{
       "title": "Resource name",
       "type": "Book/Article/Video",
-      "description": "Why it's important"
+      "description": "Why it's important",
+      "url": "Link to resource"
     }],
     "supplementary": [{
       "title": "Additional resource",
       "type": "Resource type",
-      "description": "How it helps"
+      "description": "How it helps",
+      "url": "Link to resource"
     }]
   },
   "nextSteps": {
@@ -93,7 +95,7 @@ Return a JSON object without any markdown formatting following this structure:
         },
         {
           role: "user",
-          content: `Create print-friendly lesson content for "${lessonTitle}" from "${chapterTitle}" in "${courseTitle}". ID: ${lessonId}.`
+          content: `Create print-friendly lesson content focusing on clarity and ease of learning for "${lessonTitle}" from "${chapterTitle}" in "${courseTitle}". ID: ${lessonId}.`
         }
       ],
       temperature: 1,
