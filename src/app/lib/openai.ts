@@ -5,7 +5,7 @@ if (!process.env.XAI_API_KEY) {
 }
 
 // export const aiModel = "gpt-4o-mini";
-export const aiModel = "sonar-pro";
+export const aiModel = "sonar";
 // export const aiModel = "grok-2-latest";
 
 export const openai = new OpenAI({
