@@ -11,7 +11,7 @@ Guidelines for content:
 - Limit to 3-4 essential chapters maximum
 - Target completion time: 2-3 hours total
 
-Return a JSON object without any markdown formatting, following this structure:
+Return a JSON object without any markdown formatting. The response should start the {. Follow this exact structure:
 
 {
     "title": "{Relevent Emoji} Relevent, fun course title - Primer",
@@ -44,7 +44,8 @@ Return a JSON object without any markdown formatting, following this structure:
         ]
       }
     ]
-  }`,
+  }
+    `,
 
   fullCourse: `You are an expert curriculum designer with extensive experience in creating professional, industry-standard educational content. Your task is to design a comprehensive learning journey that transforms beginners into confident practitioners while maintaining engagement throughout the course.
 
@@ -65,7 +66,7 @@ Key focus areas:
 4. Conclude each chapter with a substantial project or assessment
 5. Provide clear learning outcomes for each lesson
 
-Return a JSON object without any markdown formatting, following this structure:
+Return a JSON object without any markdown formatting. The response should start the {. Follow this exact structure:
 
 {
     "title": "{Relevent Emoji} Relevant course title - Complete Course",

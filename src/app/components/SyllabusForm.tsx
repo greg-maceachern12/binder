@@ -102,6 +102,9 @@ export default function SyllabusForm() {
     <div className="w-full max-w-6xl mx-auto px-4">
       {/* Hero Section */}
       <div className="text-center mb-8 md:mb-12">
+      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
+            Now using Sonar Pro by Perplexity AI
+          </div>
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">

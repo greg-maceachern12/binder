@@ -56,7 +56,7 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-
+    console.log(content);
     const syllabus = JSON.parse(content);
     const imageUrl = await getUnsplashImage(`${syllabus.title} background`);
 
