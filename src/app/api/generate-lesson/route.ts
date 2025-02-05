@@ -103,6 +103,7 @@ Return a JSON object without any markdown formatting. The response should start 
     });
 
     const content = completion.choices[0].message.content;
+    console.log(content)
     if (!content) {
       return NextResponse.json({ error: "No content received" }, { status: 500 });
     }

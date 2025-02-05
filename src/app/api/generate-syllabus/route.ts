@@ -46,7 +46,7 @@ export async function POST(request: Request) {
         }
       ],
       temperature: 1,
-      max_tokens: courseType === 'primer' ? 1000 : 3000
+      max_tokens: courseType === 'primer' ? 1500 : 3500
     });
 
     const content = completion.choices[0].message.content;

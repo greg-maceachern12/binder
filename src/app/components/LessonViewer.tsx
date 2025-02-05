@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Book, Clock, Target, X, Menu } from 'lucide-react';
+import { Book, Clock, Target, X, Menu, ExternalLink } from 'lucide-react';
 import AudioPlayer from './AudioPlayer';
 import { DetailedLesson } from '@/app/types';
 
@@ -269,16 +269,27 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Resources</h2>
               <div className="grid gap-3 md:gap-4">
                 {lesson.resources.required.map((resource, i) => (
-                  <div key={i} className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
-                    <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
-                      <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                  <a
+                    key={i}
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block transition-all duration-200 hover:bg-gray-100"
+                  >
+                    <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="text-base md:text-lg text-gray-900 hover:text-blue-600">{resource.title}</h3>
+                          <ExternalLink className="w-4 h-4 text-gray-400" />
+                        </div>
+                        <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>
+                        <p className="text-sm md:text-base text-gray-600">{resource.description}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h3 className="text-base md:text-lg text-gray-900 mb-1">{resource.title}</h3>
-                      <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>
-                      <p className="text-sm md:text-base text-gray-600">{resource.description}</p>
-                    </div>
-                  </div>
+                  </a>
                 ))}
                 {/* Supplementary Resources */}
                 {lesson.resources.supplementary && lesson.resources.supplementary.length > 0 && (
@@ -286,16 +297,27 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                     <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Supplementary Resources</h3>
                     <div className="grid gap-3 md:gap-4">
                       {lesson.resources.supplementary.map((resource, i) => (
-                        <div key={i} className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
-                          <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                        <a
+                          key={i}
+                          href={resource.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block transition-all duration-200 hover:bg-gray-100"
+                        >
+                          <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                            </div>
+                            <div>
+                              <div className="flex items-center gap-2 mb-1">
+                                <h3 className="text-base md:text-lg text-gray-900 hover:text-blue-600">{resource.title}</h3>
+                                <ExternalLink className="w-4 h-4 text-gray-400" />
+                              </div>
+                              <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>
+                              <p className="text-sm md:text-base text-gray-600">{resource.description}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h3 className="text-base md:text-lg text-gray-900 mb-1">{resource.title}</h3>
-                            <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>
-                            <p className="text-sm md:text-base text-gray-600">{resource.description}</p>
-                          </div>
-                        </div>
+                        </a>
                       ))}
                     </div>
                   </div>
@@ -303,46 +325,46 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               </div>
             </div>
 
-            {/* Next Steps */}
-            <div className="mb-8 md:mb-12">
-              <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Next Steps</h2>
-              <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
-                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps.summary}</p>
+        {/* Next Steps */}
+        <div className="mb-8 md:mb-12">
+          <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Next Steps</h2>
+          <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
+            <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps.summary}</p>
 
-                {lesson.nextSteps.furtherLearning.length > 0 && (
-                  <div className="mb-4 md:mb-6">
-                    <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Further Learning</h3>
-                    <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
-                      {lesson.nextSteps.furtherLearning.map((item, i) => (
-                        <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                {lesson.nextSteps.applications.length > 0 && (
-                  <div>
-                    <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Practical Applications</h3>
-                    <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
-                      {lesson.nextSteps.applications.map((item, i) => (
-                        <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+            {lesson.nextSteps.furtherLearning.length > 0 && (
+              <div className="mb-4 md:mb-6">
+                <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Further Learning</h3>
+                <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
+                  {lesson.nextSteps.furtherLearning.map((item, i) => (
+                    <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
 
-            {/* Notes Section - Only visible in print */}
-            <div className="hidden print:block print:page-break-before-always">
-              <h2 className="text-xl mb-4">Notes</h2>
-              <div className="border-t border-dashed pt-4">
-                <div className="h-96"></div>
+            {lesson.nextSteps.applications.length > 0 && (
+              <div>
+                <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Practical Applications</h3>
+                <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
+                  {lesson.nextSteps.applications.map((item, i) => (
+                    <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
+                  ))}
+                </ul>
               </div>
-            </div>
+            )}
+          </div>
+        </div>
+
+        {/* Notes Section - Only visible in print */}
+        <div className="hidden print:block print:page-break-before-always">
+          <h2 className="text-xl mb-4">Notes</h2>
+          <div className="border-t border-dashed pt-4">
+            <div className="h-96"></div>
           </div>
         </div>
       </div>
     </div>
+      </div >
+    </div >
   );
 }
