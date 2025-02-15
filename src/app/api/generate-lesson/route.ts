@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { openai, aiModel } from "@/app/lib/openai";
+import { openai, aiModelLesson } from "@/app/lib/openai";
 import { supabase } from '@/app/lib/supabase/client';
 
 export async function POST(request: Request) {
@@ -14,13 +14,13 @@ export async function POST(request: Request) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: aiModel,
+      model: aiModelLesson,
       messages: [
         {
           role: "system",
-          content: `You are an expert educator tasked with creating a detailed, print-friendly lesson on a given topic. Your goal is to produce high-quality, practical content that is directly applicable to learners' needs.
+          content: `You are an expert educator tasked with creating a detailed, print-friendly lesson on ${chapterTitle} as part of a ${courseTitle} course. Your goal is to produce high-quality, practical content that is directly applicable to learners' needs.
           
-Return a JSON object without any markdown formatting. The response should start the {. Follow this exact structure:
+Return a JSON object without any markdown formatting. The response should start the {. Ensure this can be parsed by JSON.parse(). Watch out for quotations as that can break the JSON. Follow this exact structure:
 
 {
   "id": "lesson-id",

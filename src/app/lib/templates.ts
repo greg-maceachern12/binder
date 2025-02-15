@@ -58,6 +58,7 @@ Guidelines for content creation:
 - Include supplementary resources and references where relevant
 - Target 6-10 chapters, each building upon previous chapters
 - Design for both self-paced and guided learning scenarios
+- Ensure this can be parsed by JSON.parse(). Watch out for quotations as that can break the JSON.
 
 Key focus areas:
 1. Start with foundational concepts that scaffold later learning

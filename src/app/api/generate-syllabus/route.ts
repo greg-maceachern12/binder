@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { openai, aiModel } from '@/app/lib/openai';
+import { openai, aiModelSyllabus } from '@/app/lib/openai';
 import { supabase } from '@/app/lib/supabase/client';
 import { SyllabusLesson } from '@/app/types';
 import { COURSE_TEMPLATES } from '@/app/lib/templates';
@@ -34,7 +34,7 @@ export async function POST(request: Request) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: aiModel,
+      model: aiModelSyllabus,
       messages: [
         {
           role: "system",
