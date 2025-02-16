@@ -4,8 +4,8 @@ if (!process.env.OPENROUTER_API_KEY) {
   throw new Error('Missing API Key');
 }
 
-export const aiModelSyllabus = "perplexity/sonar-reasoning";
-export const aiModelLesson = "anthropic/claude-3.5-sonnet";
+export const aiModelSyllabus = "openai/gpt-4o-mini";
+export const aiModelLesson = "perplexity/sonar";
 
 export const openai = new OpenAI({
     // apiKey: process.env.OPENAI_API_KEY

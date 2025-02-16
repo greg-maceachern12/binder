@@ -11,8 +11,7 @@ Guidelines for content:
 - Limit to 3-4 essential chapters maximum
 - Target completion time: 2-3 hours total
 
-Return a JSON object without any markdown formatting. The response should start the {. Follow this exact structure:
-
+Return a JSON object without any markdown formatting. The response should start with the open bracket {. Follow this exact structure:
 {
     "title": "{Relevent Emoji} Relevent, fun course title - Primer",
     "description": "A focused introduction to get you started quickly with {topic}",
@@ -67,8 +66,7 @@ Key focus areas:
 4. Conclude each chapter with a substantial project or assessment
 5. Provide clear learning outcomes for each lesson
 
-Return a JSON object without any markdown formatting. The response should start the {. Follow this exact structure:
-
+Return a JSON object without any markdown formatting.. The response should start with the open bracket {. Follow this exact structure:
 {
     "title": "{Relevent Emoji} Relevant course title - Complete Course",
     "description": "A comprehensive course covering everything from fundamentals to advanced applications of {topic}",
