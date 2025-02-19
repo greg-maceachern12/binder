@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2 } from 'lucide-react';
+import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2, Sparkles } from 'lucide-react';
 import { Syllabus, DetailedLesson } from '@/app/types';
 import CourseDownloader from './CourseDownloader';
 import DynamicHeader from './DynamicHeader';
@@ -127,8 +127,8 @@ export default function SyllabusDisplay({
                     onClick={onGenerateFullCourse}
                     className="mx-auto px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                   >
-                    <Target className="w-4 h-4" />
-                    {completedLessons === 0 ? 'Generate Full Course' : 'Resume Generation'}
+                    <Sparkles className="w-4 h-4" />
+                    {completedLessons === 0 ? 'Generate Course' : 'Resume Generation'}
                   </button>
                   <p className="text-xs text-gray-600 text-center">
                     Estimated time: {(totalLessons - completedLessons) * 10} seconds
