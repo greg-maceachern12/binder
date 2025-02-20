@@ -123,14 +123,14 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             {/* Learning Objectives */}
             <div className="mb-8 md:mb-12">
               <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Learning Objectives</h2>
-              <div className="bg-blue-50 rounded-xl md:rounded-2xl p-4 md:p-6">
+              <div className="bg-indigo-50 rounded-xl md:rounded-2xl p-4 md:p-6">
                 <ul className="space-y-3 md:space-y-4">
                   {lesson.metadata.learningObjectives.map((objective, i) => (
                     <li key={i} className="flex items-start gap-3 md:gap-4">
-                      <div className="w-5 h-5 md:w-6 md:h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <div className="w-5 h-5 md:w-6 md:h-6 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                         {i + 1}
                       </div>
-                      <span className="text-sm md:text-base text-blue-900">{objective}</span>
+                      <span className="text-sm md:text-base text-indigo-900">{objective}</span>
                     </li>
                   ))}
                 </ul>
@@ -197,7 +197,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
 
                       <div>
                         <h4 className="font-medium text-base md:text-lg mb-2">Solution:</h4>
-                        <div className="bg-blue-50 rounded-lg md:rounded-xl p-4 md:p-6">
+                        <div className="bg-indigo-50 rounded-lg md:rounded-xl p-4 md:p-6">
                           <p className="text-sm md:text-base text-gray-600">{exercise.solution}</p>
                         </div>
                       </div>
@@ -277,12 +277,12 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                     className="block transition-all duration-200 hover:bg-gray-100"
                   >
                     <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
-                      <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
-                        <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                        <Book className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                       </div>
                       <div>
                         <div className="flex items-center gap-2 mb-1">
-                          <h3 className="text-base md:text-lg text-gray-900 hover:text-blue-600">{resource.title}</h3>
+                          <h3 className="text-base md:text-lg text-gray-900 hover:text-indigo-600">{resource.title}</h3>
                           <ExternalLink className="w-4 h-4 text-gray-400" />
                         </div>
                         <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>
@@ -305,12 +305,12 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                           className="block transition-all duration-200 hover:bg-gray-100"
                         >
                           <div className="flex items-start gap-3 md:gap-4 p-4 md:p-6 bg-gray-50 rounded-xl md:rounded-2xl">
-                            <div className="w-8 h-8 md:w-10 md:h-10 bg-blue-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
-                              <Book className="w-4 h-4 md:w-5 md:h-5 text-blue-600" />
+                            <div className="w-8 h-8 md:w-10 md:h-10 bg-indigo-100 rounded-lg md:rounded-xl flex items-center justify-center flex-shrink-0">
+                              <Book className="w-4 h-4 md:w-5 md:h-5 text-indigo-600" />
                             </div>
                             <div>
                               <div className="flex items-center gap-2 mb-1">
-                                <h3 className="text-base md:text-lg text-gray-900 hover:text-blue-600">{resource.title}</h3>
+                                <h3 className="text-base md:text-lg text-gray-900 hover:text-indigo-600">{resource.title}</h3>
                                 <ExternalLink className="w-4 h-4 text-gray-400" />
                               </div>
                               <p className="text-xs md:text-sm text-gray-500 mb-2">{resource.type}</p>

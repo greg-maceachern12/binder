@@ -84,7 +84,7 @@ export default function AudioPlayer({ lessonTitle, lessonContent }: AudioPlayerP
       <button
         onClick={togglePlay}
         disabled={isLoading}
-        className="flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl hover:bg-blue-700 shadow-sm hover:shadow transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
+        className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 shadow-sm hover:shadow transition-all duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
       >
         {isLoading ? (
           <>

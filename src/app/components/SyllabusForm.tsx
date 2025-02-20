@@ -106,7 +106,7 @@ export default function SyllabusForm() {
             Now using Sonar Pro by Perplexity AI
           </div>
         <div className="relative inline-block">
-          <div className="absolute inset-0 bg-blue-200 rounded-full blur-2xl opacity-30"></div>
+          <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">
             <Image
               src="/logo_trans.png"
@@ -176,7 +176,7 @@ export default function SyllabusForm() {
                   value={topic}
                   onChange={(e) => setTopic(e.target.value)}
                   placeholder="What would you like to learn?"
-                  className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300"
+                  className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
                   disabled={isLoading}
                 />
                 {topic && !isLoading && (
@@ -243,7 +243,7 @@ export default function SyllabusForm() {
       {/* Topic Categories */}
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8 md:mb-12">
         <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <TrendingUp className="w-5 h-5 text-blue-600" />
+          <TrendingUp className="w-5 h-5 text-indigo-600" />
           <h2 className="text-lg md:text-xl text-gray-900">Popular Topics</h2>
         </div>
 
@@ -255,7 +255,7 @@ export default function SyllabusForm() {
                 key={category}
                 onClick={() => setActiveCategory(category)}
                 className={`flex-shrink-0 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300 ${activeCategory === category
-                  ? 'bg-blue-600 text-white shadow-sm'
+                  ? 'bg-indigo-600 text-white shadow-sm'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
@@ -271,18 +271,18 @@ export default function SyllabusForm() {
             <button
               key={topicItem}
               onClick={() => handleTopicSelect(topicItem)}
-              className="group p-3 md:p-4 text-left rounded-lg md:rounded-xl border border-gray-200 hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-300"
+              className="group p-3 md:p-4 text-left rounded-lg md:rounded-xl border border-gray-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition-all duration-300"
             >
               <div className="flex items-center gap-3">
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-md md:rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-md md:rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                   <BookType className="w-3.5 h-3.5 md:w-4 md:h-4" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-inter text-gray-900 truncate group-hover:text-blue-600 transition-colors">
+                  <h3 className="text-xs font-inter text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
                     {topicItem}
                   </h3>
                 </div>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
               </div>
             </button>
           ))}
@@ -292,7 +292,7 @@ export default function SyllabusForm() {
       {/* Features Grid - Responsive Layout */}
       <div>
         <div className="mb-6 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-blue-600" />
+          <BookOpen className="w-5 h-5 text-indigo-600" />
           <h2 className="text-lg md:text-xl text-gray-900">Featured Courses</h2>
         </div>
 
@@ -319,10 +319,10 @@ export default function SyllabusForm() {
               href={feature.href}
               target="_blank"
               rel="noopener noreferrer"
-              className="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-300 block relative"
+              className="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all duration-300 block relative"
             >
               <div className="absolute top-4 right-4">
-                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
               </div>
               <h3 className="text-xl text-gray-900 mb-2 pr-8">{feature.title}</h3>
               <p className="text-gray-600 text-sm">{feature.description}</p>
