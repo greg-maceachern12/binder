@@ -2,6 +2,7 @@
 
 import React from 'react';
 import SyllabusForm from '@/app/components/SyllabusForm';
+import FeedbackForm from './components/FeedbackForm';
 
 export default function EnhancedHome() {
   return (
@@ -20,6 +21,7 @@ export default function EnhancedHome() {
         <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl rounded-3xl" />
         <div className="relative">
           <SyllabusForm />
+          <FeedbackForm />
         </div>
       </div>
     </main>
