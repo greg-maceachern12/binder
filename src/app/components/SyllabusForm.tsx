@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink } from 'lucide-react';
+import { supabase } from "@/app/lib/supabase/client";
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -56,6 +57,7 @@ export default function SyllabusForm() {
   const [error, setError] = useState<string | null>(null);
   const [syllabusUrl, setSyllabusUrl] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
+  const [coursesGenerated, setCoursesGenerated] = useState(12548); // Initial count of courses generated
   const topicInputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -98,13 +100,34 @@ export default function SyllabusForm() {
     topicInputRef.current?.focus();
   };
 
+  useEffect(() => {
+    const fetchSyllabiCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('syllabi')
+          .select('*', { count: 'exact', head: true });
+
+        if (error) {
+          console.error('Error fetching syllabi count:', error);
+          return;
+        }
+
+        setCoursesGenerated(count || 0);
+      } catch (err) {
+        console.error('Failed to fetch syllabi count:', err);
+      }
+    };
+
+    fetchSyllabiCount();
+  }, []);
+
   return (
     <div className="w-full max-w-6xl mx-auto px-4">
       {/* Hero Section */}
       <div className="text-center mb-8 md:mb-12">
-      <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
-            Now using Sonar Pro by Perplexity AI
-          </div>
+        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
+          Now using Sonar Pro by Perplexity AI
+        </div>
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">
@@ -133,8 +156,17 @@ export default function SyllabusForm() {
       <div className="max-w-3xl mx-auto mb-8 md:mb-12">
         <form onSubmit={handleSubmit} className="relative">
           <div className="flex flex-col gap-4">
+            
             {/* Course Type Selection with Description */}
             <div className="flex flex-col items-center gap-2">
+            <div className="bg-indigo-50 px-4 py-2 rounded-full text-xs font-medium text-indigo-600 flex items-center gap-1.5 mb-2 shadow-sm">
+                <BookOpen className="w-3.5 h-3.5" />
+                <span>
+                  {coursesGenerated !== null
+                    ? `${coursesGenerated.toLocaleString()} learning journeys created`
+                    : "Loading courses..."}
+                </span>
+              </div>
               <div className="flex gap-2 justify-center">
                 <button
                   type="button"
