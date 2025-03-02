@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Script from 'next/script';
 import { Instrument_Serif, Inter } from "next/font/google";
 import "./globals.css";
+import { AuthProvider } from './context/AuthContext';
+import Header from './components/Header';
 
 const instrumentSerif = Instrument_Serif({ 
   weight: '400',
@@ -73,7 +75,12 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        <AuthProvider>
+          <Header />
+          {children}
+        </AuthProvider>
+      </body>
     </html>
   );
 }

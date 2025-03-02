@@ -21,7 +21,7 @@ export async function generateMetadata({
     }
 
     return {
-        title: `${syllabusData.title} | Primer AI`,
+        title: `${syllabusData.title} | PrimerAI`,
         description: syllabusData.description,
         openGraph: {
             title: syllabusData.title,

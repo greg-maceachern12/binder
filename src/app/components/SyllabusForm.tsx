@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink } from 'lucide-react';
 import { supabase } from "@/app/lib/supabase/client";
+import { useAuth } from '../context/AuthContext';
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -50,6 +51,7 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 };
 
 export default function SyllabusForm() {
+  const { user } = useAuth();
   const [topic, setTopic] = useState('');
   const [courseType, setCourseType] = useState<CourseType>('primer');
   const [successTopic, setSuccessTopic] = useState<string>('');
@@ -76,7 +78,8 @@ export default function SyllabusForm() {
         },
         body: JSON.stringify({
           topic,
-          courseType
+          courseType,
+          userId: user?.id
         }),
       });
 

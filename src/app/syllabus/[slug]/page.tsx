@@ -70,7 +70,7 @@ export default function SyllabusPage() {
             setSyllabus(transformedSyllabus);
 
             // Set page title
-            document.title = `${transformedSyllabus.title} | Learning Journey`;
+            document.title = `${transformedSyllabus.title} | PrimerAI`;
 
             const generatedLessonsMap = dbSyllabus.chapters.reduce((acc: { [key: string]: DetailedLesson }, chapter) => {
                 chapter.lessons.forEach((lesson: DbLesson) => {
