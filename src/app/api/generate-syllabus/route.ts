@@ -29,7 +29,8 @@ export async function POST(request: Request) {
     const {
       topic,
       courseType = "primer",
-    }: { topic: string; courseType: keyof typeof COURSE_TEMPLATES } =
+      userId = null,
+    }: { topic: string; courseType: keyof typeof COURSE_TEMPLATES; userId?: string | null } =
       await request.json();
 
     if (!topic) {
@@ -86,6 +87,7 @@ export async function POST(request: Request) {
         image_url: imageUrl,
         location: userLoc, // Using the IP column to store city instead
         isp: locationData.org || null,
+        user_id: userId,
       })
       .select()
       .single();
