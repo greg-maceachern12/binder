@@ -28,7 +28,7 @@ export default function Auth() {
 
   return (
     <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden p-8">
-      <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Sign in to Learning Journey</h2>
+      <h2 className="text-2xl font-bold mb-6 text-center text-gray-900">Sign in to PrimerAI</h2>
       
       <form onSubmit={handleSignIn}>
         <div className="mb-4">

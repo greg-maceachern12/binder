@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase/client';
 import { DbSyllabus } from '../types/database';
-import { Loader2 } from 'lucide-react';
+import { Loader2, BookOpen } from 'lucide-react';
 
 export default function Dashboard() {
   const { user, loading, signOut } = useAuth();
@@ -52,21 +52,39 @@ export default function Dashboard() {
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Your Dashboard</h1>
-            <button
-              onClick={() => signOut()}
-              className="px-4 py-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors"
-            >
-              Sign Out
-            </button>
+        <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+          <div className="bg-gradient-to-r from-indigo-500 to-purple-600 p-6 text-white">
+            <div className="flex justify-between items-center">
+              <h1 className="text-2xl font-bold">Your Dashboard</h1>
+              <button
+                onClick={() => signOut()}
+                className="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg transition-colors backdrop-blur-sm shadow-sm"
+              >
+                Sign Out
+              </button>
+            </div>
+            <p className="mt-2 opacity-90">Welcome back, {user?.email}</p>
           </div>
-          <p className="text-gray-600">Welcome back, {user?.email}</p>
+          <div className="p-4 bg-indigo-50/50">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 font-bold text-lg">
+                {user?.email?.[0].toUpperCase() || 'U'}
+              </div>
+              <div>
+                <p className="text-sm text-indigo-600 font-medium">Account</p>
+                <p className="text-xs text-gray-500">{user?.email}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="bg-white rounded-xl shadow-md p-6">
-          <h2 className="text-xl font-bold mb-4">Your Courses</h2>
+          <h2 className="text-xl font-bold mb-4 text-gray-800 flex items-center gap-2">
+            <span className="w-8 h-8 rounded-lg bg-indigo-100 flex items-center justify-center text-indigo-600">
+              <BookOpen className="w-4 h-4" />
+            </span>
+            Your Courses
+          </h2>
           
           {loadingSyllabi ? (
             <div className="flex justify-center py-8">
@@ -90,7 +108,7 @@ export default function Dashboard() {
               <p>You haven't created any courses yet.</p>
               <button
                 onClick={() => router.push('/')}
-                className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-colors shadow-md hover:shadow-lg"
               >
                 Create Your First Course
               </button>
