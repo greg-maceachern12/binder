@@ -105,7 +105,7 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <p>You haven't created any courses yet.</p>
+              <p>You haven&apos;t created any courses yet.</p>
               <button
                 onClick={() => router.push('/')}
                 className="mt-4 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-500 hover:to-purple-500 transition-colors shadow-md hover:shadow-lg"

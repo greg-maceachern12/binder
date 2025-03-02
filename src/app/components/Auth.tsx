@@ -19,8 +19,9 @@ export default function Auth() {
       const { error } = await signIn(email);
       if (error) throw error;
       setMessage('Check your email for the magic link!');
-    } catch (error: any) {
-      setMessage(error.message || 'Failed to send magic link');
+    } catch (error: Error | unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to send magic link';
+      setMessage(errorMessage);
     } finally {
       setLoading(false);
     }
