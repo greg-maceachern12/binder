@@ -16,6 +16,7 @@ export interface Chapter {
 }
 
 export interface Syllabus {
+  id: string;
   title: string;
   description: string;
   difficultyLevel: string;
@@ -23,6 +24,7 @@ export interface Syllabus {
   prerequisites: string[];
   chapters: Chapter[];
   image_url?: string;  // Added this field
+  purchased?: boolean;
 }
 
 // Detailed lesson types

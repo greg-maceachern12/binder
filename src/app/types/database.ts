@@ -10,6 +10,7 @@ export interface DbSyllabus {
     image_url: string | null;  // Added this field
     created_at: string;
     updated_at: string;
+    purchased: boolean;
     chapters: DbChapter[];
 }
   

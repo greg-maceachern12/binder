@@ -44,12 +44,14 @@ export default function SyllabusPage() {
             const dbSyllabus = syllabusData as DbSyllabus;
 
             const transformedSyllabus: Syllabus = {
+                id: dbSyllabus.id,
                 title: dbSyllabus.title,
                 description: dbSyllabus.description,
                 difficultyLevel: dbSyllabus.difficulty_level,
                 estimatedDuration: dbSyllabus.estimated_duration,
                 prerequisites: dbSyllabus.prerequisites || [],
-                image_url: dbSyllabus.image_url || undefined,  // Add this line
+                image_url: dbSyllabus.image_url || undefined,
+                purchased: dbSyllabus.purchased || false,
                 chapters: (dbSyllabus.chapters as DbChapter[])
                     .sort((a, b) => a.order_index - b.order_index)
                     .map((chapter) => ({
