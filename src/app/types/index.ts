@@ -23,6 +23,7 @@ export interface Syllabus {
   estimatedDuration: string;
   prerequisites: string[];
   chapters: Chapter[];
+  purchase_id?: string;
   image_url?: string;  // Added this field
   purchased?: boolean;
 }

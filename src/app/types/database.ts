@@ -11,6 +11,7 @@ export interface DbSyllabus {
     created_at: string;
     updated_at: string;
     purchased: boolean;
+    purchase_id: string | null;
     chapters: DbChapter[];
 }
   

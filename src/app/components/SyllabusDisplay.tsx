@@ -6,7 +6,7 @@ import LessonViewer from './LessonViewer';
 import { useRouter } from 'next/navigation';
 
 interface Props {
-  syllabus: Syllabus;
+  syllabus: Syllabus & { purchased?: boolean }; // Added purchased property
   onGenerateFullCourse: () => Promise<void>;
   generatingLessons: boolean;
   currentGeneratingLesson: string;
@@ -34,6 +34,7 @@ export default function SyllabusDisplay({
 
   const totalLessons = syllabus.chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0);
   const completedLessons = Object.keys(generatedLessons).length;
+
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-0">
@@ -131,18 +132,54 @@ export default function SyllabusDisplay({
               </div>
               {!allLessonsGenerated && !generatingLessons && (
                 <div className="space-y-3">
+                  {syllabus.purchased ? (
                     <button
                       onClick={onGenerateFullCourse}
-                      className="mx-auto px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
+                      className="w-full px-6 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium transition-colors flex items-center justify-center gap-2"
                     >
                       <Sparkles className="w-4 h-4" />
-                      {completedLessons === 0 ? 'Generate Course' : 'Resume Generation'}
+                      Generate Course
                     </button>
-                  <p className="text-xs text-gray-600 text-center">
-                        Estimated time: {(totalLessons - completedLessons) * 10} seconds
-                        <br />
-                        Please keep this page open until generation is complete
-                  </p>
+                  ) : (
+                    <div className="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-100 rounded-lg p-4">
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-2">
+                          <div className="bg-indigo-100 rounded-full p-1.5">
+                            <Sparkles className="w-4 h-4 text-indigo-600" />
+                          </div>
+                          <h3 className="font-medium text-indigo-900">Unlock Full Course</h3>
+                        </div>
+                        <div className="text-sm font-bold text-indigo-600 bg-white px-2.5 py-1 rounded-full border border-indigo-200">
+                          $2.99
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-gray-700">Get access to all {totalLessons} lessons</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-gray-700">AI-generated lessons with code examples</span>
+                        </div>
+                        <div className="flex items-start gap-2">
+                          <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
+                          <span className="text-xs text-gray-700">One-time payment, lifetime access</span>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => {
+                          window.open(`https://maltby.lemonsqueezy.com/buy/594f6ee3-89af-4889-a8b1-7325c77b7948?checkout[custom][syllabus_id]=${syllabus.id}`, '_blank');
+                        }}
+                        className="w-full py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white rounded-lg hover:from-indigo-700 hover:to-indigo-800 text-sm font-medium transition-all shadow-sm hover:shadow flex items-center justify-center gap-2"
+                      >
+                        Unlock Course Now
+                        <ArrowRight className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
               {allLessonsGenerated && !generatingLessons && (
