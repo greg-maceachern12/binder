@@ -40,7 +40,10 @@ export async function POST(req: Request) {
     // Update the Supabase table using the existing client
     const { error } = await supabase
       .from('syllabi')
-      .update({ purchased: true })
+      .update({ 
+        purchased: true,
+        purchase_id: data.data.attributes.order_number
+      })
       .eq('id', syllabusId);
 
     if (error) {
