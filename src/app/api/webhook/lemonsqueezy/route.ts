@@ -17,7 +17,7 @@ export async function POST(req: Request) {
     // Get the raw body and signature
     const payload = await req.text();
     const signature = req.headers.get('X-Signature');
-    
+    console.log("Webhook received");
     // Verify the webhook signature
     const WEBHOOK_SECRET = process.env.LEMON_SQUEEZY_WEBHOOK_SECRET;
     if (!WEBHOOK_SECRET || !signature || !verifySignature(payload, signature, WEBHOOK_SECRET)) {
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     }
 
     const data = JSON.parse(payload);
-    
+    console.log(data);
     // Check if this is an order_created event
     if (data.meta.event_name !== 'order_created') {
       return NextResponse.json({ message: 'Ignored event' }, { status: 200 });
