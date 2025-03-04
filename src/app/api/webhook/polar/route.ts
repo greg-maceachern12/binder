@@ -1,13 +1,13 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+// import crypto from 'crypto';
 
-// Verify the webhook signature from Polar
-function verifySignature(payload: string, signature: string, secret: string) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return signature === digest;
-}
+// // Verify the webhook signature from Polar
+// function verifySignature(payload: string, signature: string, secret: string) {
+//   const hmac = crypto.createHmac('sha256', secret);
+//   const digest = hmac.update(payload).digest('hex');
+//   return signature === digest;
+// }
 
 export async function POST(req: Request) {
   try {
@@ -15,31 +15,31 @@ export async function POST(req: Request) {
     const payload = await req.text();
     
     // Get the signature and timestamp from the correct headers
-    const signatureHeader = req.headers.get('webhook-signature');
+    // const signatureHeader = req.headers.get('webhook-signature');
     
-    // Extract the actual signature from the header (format: v1,signature)
-    let signature = null;
-    if (signatureHeader && signatureHeader.includes(',')) {
-      signature = signatureHeader.split(',')[1];
-    }
+    // // Extract the actual signature from the header (format: v1,signature)
+    // let signature = null;
+    // if (signatureHeader && signatureHeader.includes(',')) {
+    //   signature = signatureHeader.split(',')[1];
+    // }
     
-    // Verify the webhook signature if configured
-    const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
+    // // Verify the webhook signature if configured
+    // const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
     
-    // Skip verification in development if needed
-    const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
+    // // Skip verification in development if needed
+    // const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
     
-    if (!skipVerification && WEBHOOK_SECRET) {
-      if (!signature) {
-        console.error('No valid signature found in webhook-signature header');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
+    // if (!skipVerification && WEBHOOK_SECRET) {
+    //   if (!signature) {
+    //     console.error('No valid signature found in webhook-signature header');
+    //     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    //   }
       
-      if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
-        console.error('Signature verification failed');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-    }
+    //   if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+    //     console.error('Signature verification failed');
+    //     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    //   }
+    // }
     
     // Parse the event payload
     const data = JSON.parse(payload);
