@@ -1,70 +1,85 @@
-import { NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase/client';
-import { headers } from 'next/headers';
+import { NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-export async function POST(request: Request) {
+// Verify the webhook signature from Polar
+function verifySignature(payload: string, signature: string, secret: string) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = hmac.update(payload).digest('hex');
+  return signature === digest;
+}
+
+export async function POST(req: Request) {
   try {
-    // Get payload and headers
-    const payload = await request.text();
-    const headersList = await headers();
-    const signatureHeader = headersList.get('webhook-signature');
-    const timestamp = headersList.get('webhook-timestamp');
+    // Get the raw body and signature
+    const payload = await req.text();
+    const signature = req.headers.get('polar-signature')?.split(',')[1]; // Extract actual signature from 'v1,signature'
+    
+    console.log("Polar webhook received", { 
+      signaturePresent: !!signature, 
+      payloadLength: payload.length 
+    });
+    
+    // Verify the webhook signature
     const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
     
-    // Basic validation
-    if (!WEBHOOK_SECRET || !signatureHeader) {
-      console.error('Missing webhook secret or signature');
-      return NextResponse.json({ error: 'Configuration error' }, { status: 401 });
-    }
+    // Skip verification in development if needed
+    const skipVerification = process.env.NODE_ENV === 'development' && process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
     
-    // Verify signature
-    try {
-      // Parse signature format: v1,signature
-      const [version, signature] = signatureHeader.split(',');
-      if (version !== 'v1') {
-        return NextResponse.json({ error: 'Invalid signature version' }, { status: 401 });
-      }
-      
-      // Create signature using timestamp+payload (common webhook pattern)
-      const hmac = crypto.createHmac('sha256', WEBHOOK_SECRET);
-      const data = timestamp ? `${timestamp}.${payload}` : payload;
-      const computedSignature = hmac.update(data).digest('base64');
-      
-      console.log('Computed:', computedSignature);
-      console.log('Received:', signature);
-      
-      if (computedSignature !== signature) {
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-    } catch (error) {
-      console.error('Signature verification error:', error);
-      return NextResponse.json({ error: 'Signature error' }, { status: 401 });
+    if (!skipVerification && (!WEBHOOK_SECRET || !signature || !verifySignature(payload, signature, WEBHOOK_SECRET))) {
+      console.error('Signature verification failed', { 
+        secretPresent: !!WEBHOOK_SECRET,
+        signaturePresent: !!signature
+      });
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    // Parse and process the event
-    const event = JSON.parse(payload);
-    if (!event.type?.startsWith('subscription.') || !event.data?.user_id) {
-      return NextResponse.json({ status: 'ignored' });
+    const data = JSON.parse(payload);
+    console.log("Polar event received:", data.type);
+    
+    // Check for subscription events
+    const supportedEvents = [
+      'subscription.created',
+      'subscription.updated',
+      'subscription.active',
+      'subscription.canceled',
+      'subscription.uncanceled',
+      'subscription.revoked'
+    ];
+    
+    if (!supportedEvents.includes(data.type)) {
+      return NextResponse.json({ message: 'Ignored event' }, { status: 200 });
     }
 
-    // Update user subscription in database
-    const { data: userData, error: updateError } = await supabase
+    // Ensure we have user_id
+    if (!data.data?.user_id) {
+      console.error('No user_id found in webhook payload');
+      return NextResponse.json({ error: 'No user_id found' }, { status: 400 });
+    }
+
+    // Update the user's subscription status
+    const { error } = await supabase
       .from('users')
       .update({ 
-        subscription_status: event.data.status,
-        subscription: ['subscription.cancelled', 'subscription.revoked'].includes(event.type) 
+        subscription_status: data.data.status,
+        subscription: ['subscription.canceled', 'subscription.revoked'].includes(data.type) 
           ? null 
-          : event.data.id
+          : data.data.id,
+        updated_at: new Date().toISOString()
       })
-      .eq('id', event.data.user_id);
+      .eq('id', data.data.user_id);
 
-    if (updateError) {
-      console.error('Database error:', updateError);
+    if (error) {
+      console.error('Database error:', error);
       return NextResponse.json({ error: 'Database update failed' }, { status: 500 });
     }
 
-    return NextResponse.json({ status: 'success' });
+    return NextResponse.json({ 
+      message: 'Success',
+      event: data.type,
+      user_id: data.data.user_id
+    }, { status: 200 });
+    
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
