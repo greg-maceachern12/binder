@@ -1,57 +1,62 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase/client';
-import { headers } from 'next/headers';
 import crypto from 'crypto';
 
-// Webhook secret should be stored in environment variable
-const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
-
 // Verify the webhook signature from Polar
-function verifyPolarSignature(payload: string, signature: string) {
-  if (!POLAR_WEBHOOK_SECRET) {
-    console.error('POLAR_WEBHOOK_SECRET is not set');
-    return false;
-  }
-
-  const hmac = crypto
-    .createHmac('sha256', POLAR_WEBHOOK_SECRET)
-    .update(payload)
-    .digest('hex');
-
+function verifySignature(payload: string, signature: string, secret: string) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = hmac.update(payload).digest('hex');
   return crypto.timingSafeEqual(
     Buffer.from(signature),
-    Buffer.from(hmac)
+    Buffer.from(digest)
   );
 }
 
 export async function POST(request: Request) {
   try {
+    // Get the raw body and signature
     const payload = await request.text();
-    const headersList = await headers();
-    const signature = headersList.get('polar-signature');
-
-    // Verify webhook signature
-    if (!signature || !verifyPolarSignature(payload, signature)) {
-      return NextResponse.json(
-        { error: 'Invalid signature' },
-        { status: 401 }
-      );
+    const signature = request.headers.get('polar-signature');
+    
+    console.log("Polar webhook received");
+    
+    // Verify the webhook signature
+    const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
+    if (!WEBHOOK_SECRET) {
+      console.error('POLAR_WEBHOOK_SECRET is not set');
+      return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
+    }
+    
+    if (!signature) {
+      console.error('No polar-signature header found');
+      return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
+    }
+    
+    if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+      console.error('Signature verification failed');
+      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
+    console.log('Signature verified successfully');
+    
     const event = JSON.parse(payload);
     const eventType = event.type;
-    console.log('eventType', eventType);
+    
+    console.log(`Processing event type: ${eventType}`);
 
     // Handle subscription events
     switch (eventType) {
       case 'subscription.created': {
-        const { 
-          subscription: { 
-            user_id,
-            status,
-            subscription_id 
-          }
-        } = event.data;
+        console.log('Handling subscription.created event');
+        // Extract user details from the event
+        const user_id = event.data.user_id;
+        const status = event.data.status;
+        const subscription_id = event.data.id;
+        
+        if (!user_id) {
+          console.error('No user_id found in subscription.created payload');
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
 
         // Update user's subscription status in database
         const { error: updateError } = await supabase
@@ -74,11 +79,16 @@ export async function POST(request: Request) {
       }
 
       case 'subscription.updated': {
-        const { 
-          id: subscription_id,
-          user_id,
-          status 
-        } = event.data;
+        console.log('Handling subscription.updated event');
+        // Extract details from the event
+        const subscription_id = event.data.id;
+        const user_id = event.data.user_id;
+        const status = event.data.status;
+        
+        if (!user_id) {
+          console.error('No user_id found in subscription.updated payload');
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
 
         // Update user's subscription details
         const { error: updateError } = await supabase
@@ -101,11 +111,16 @@ export async function POST(request: Request) {
       }
 
       case 'subscription.active': {
-        const { 
-          id: subscription_id,
-          user_id,
-          status 
-        } = event.data;
+        console.log('Handling subscription.active event');
+        // Extract details from the event
+        const subscription_id = event.data.id;
+        const user_id = event.data.user_id;
+        const status = event.data.status;
+        
+        if (!user_id) {
+          console.error('No user_id found in subscription.active payload');
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
 
         // Update user's subscription to active status
         const { error: updateError } = await supabase
@@ -129,10 +144,15 @@ export async function POST(request: Request) {
 
       case 'subscription.cancelled':
       case 'subscription.revoked': {
-        const { 
-          user_id,
-          status 
-        } = event.data;
+        console.log(`Handling ${eventType} event`);
+        // Extract details from the event
+        const user_id = event.data.user_id;
+        const status = event.data.status;
+        
+        if (!user_id) {
+          console.error(`No user_id found in ${eventType} payload`);
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
 
         // Update user's subscription status to cancelled/revoked
         const { error: updateError } = await supabase
@@ -155,11 +175,16 @@ export async function POST(request: Request) {
       }
 
       case 'subscription.uncanceled': {
-        const { 
-          id: subscription_id,
-          user_id,
-          status 
-        } = event.data;
+        console.log('Handling subscription.uncanceled event');
+        // Extract details from the event
+        const subscription_id = event.data.id;
+        const user_id = event.data.user_id;
+        const status = event.data.status;
+        
+        if (!user_id) {
+          console.error('No user_id found in subscription.uncanceled payload');
+          return NextResponse.json({ error: 'Invalid payload' }, { status: 400 });
+        }
 
         // Update user's subscription status back to active
         const { error: updateError } = await supabase
