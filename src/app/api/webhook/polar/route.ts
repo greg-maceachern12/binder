@@ -40,6 +40,7 @@ export async function POST(request: Request) {
 
     const event = JSON.parse(payload);
     const eventType = event.type;
+    console.log('eventType', eventType);
 
     // Handle subscription events
     switch (eventType) {
