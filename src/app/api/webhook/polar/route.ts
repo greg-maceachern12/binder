@@ -19,7 +19,7 @@ export async function POST(request: Request) {
     const payload = await request.text();
     
     // Use Next.js headers() API to get all headers
-    const headersList = headers();
+    const headersList = await headers();
     console.log("Polar webhook received");
     
     // Log all available headers for debugging
