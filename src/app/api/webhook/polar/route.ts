@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/app/lib/supabase/client';
+import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 // Verify the webhook signature from Polar
@@ -16,19 +17,32 @@ export async function POST(request: Request) {
   try {
     // Get the raw body and signature
     const payload = await request.text();
-    const signature = request.headers.get('polar-signature');
     
+    // Use Next.js headers() API to get all headers
+    const headersList = headers();
     console.log("Polar webhook received");
     
-    // Verify the webhook signature
+    // Log all available headers for debugging
+    console.log("Available headers:", Array.from(headersList.entries()));
+    
+    // Try multiple possible header names for the signature
+    let signature = headersList.get('polar-signature') || 
+                   headersList.get('X-Polar-Signature') || 
+                   headersList.get('x-polar-signature') || 
+                   headersList.get('Polar-Signature');
+    
+    // Verify the webhook secret is configured
     const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
     if (!WEBHOOK_SECRET) {
       console.error('POLAR_WEBHOOK_SECRET is not set');
       return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 });
     }
     
+    // Check if we found a signature
     if (!signature) {
-      console.error('No polar-signature header found');
+      console.error('No signature header found. Please check webhook configuration.');
+      // Log the first part of the payload for debugging
+      console.log('Payload preview:', payload.substring(0, 200));
       return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
     
