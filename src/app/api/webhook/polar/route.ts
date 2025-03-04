@@ -1,90 +1,195 @@
-import { NextRequest, NextResponse } from "next/server";
-import { supabase } from "@/app/lib/supabase/client";
-import * as crypto from 'crypto';
+import { NextResponse } from 'next/server';
+import { supabase } from '@/app/lib/supabase/client';
+import { headers } from 'next/headers';
+import crypto from 'crypto';
 
-// Verify webhook signature from Polar
-function verifyPolarSignature(
-  payload: string,
-  signature: string,
-  secret: string
-): boolean {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
+// Webhook secret should be stored in environment variable
+const POLAR_WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
+
+// Verify the webhook signature from Polar
+function verifyPolarSignature(payload: string, signature: string) {
+  if (!POLAR_WEBHOOK_SECRET) {
+    console.error('POLAR_WEBHOOK_SECRET is not set');
+    return false;
+  }
+
+  const hmac = crypto
+    .createHmac('sha256', POLAR_WEBHOOK_SECRET)
+    .update(payload)
+    .digest('hex');
+
   return crypto.timingSafeEqual(
-    Buffer.from(digest, 'hex'),
-    Buffer.from(signature, 'hex')
+    Buffer.from(signature),
+    Buffer.from(hmac)
   );
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
-    // Get the raw request body for signature verification
-    const rawBody = await request.text();
-    const body = JSON.parse(rawBody);
-    
-    // Get the Polar signature from headers
-    const signature = request.headers.get('polar-signature');
-    
-    // Verify the signature
-    const webhookSecret = process.env.POLAR_WEBHOOK_SECRET;
-    
-    if (!webhookSecret) {
-      console.error('Missing POLAR_WEBHOOK_SECRET environment variable');
-      return NextResponse.json(
-        { error: 'Server configuration error' },
-        { status: 500 }
-      );
-    }
-    
-    if (!signature || !verifyPolarSignature(rawBody, signature, webhookSecret)) {
-      console.error('Invalid signature');
+    const payload = await request.text();
+    const headersList = await headers();
+    const signature = headersList.get('polar-signature');
+
+    // Verify webhook signature
+    if (!signature || !verifyPolarSignature(payload, signature)) {
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 401 }
       );
     }
-    
-    // Now that we've verified the webhook, process the event
-    const eventType = body.type;
-    
-    // Only process order.created events
-    if (eventType === 'order.created') {
-      // Extract the syllabus_id from the metadata
-      const syllabusId = body.data.metadata?.syllabus_id;
-      
-      if (!syllabusId) {
-        console.error('No syllabus_id found in order metadata');
-        return NextResponse.json(
-          { error: 'Missing syllabus_id in order metadata' },
-          { status: 400 }
-        );
+
+    const event = JSON.parse(payload);
+    const eventType = event.type;
+
+    // Handle subscription events
+    switch (eventType) {
+      case 'subscription.created': {
+        const { 
+          subscription: { 
+            user_id,
+            status,
+            subscription_id 
+          }
+        } = event.data;
+
+        // Update user's subscription status in database
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            subscription: subscription_id,
+            subscription_status: status
+          })
+          .eq('id', user_id);
+
+        if (updateError) {
+          console.error('Error updating subscription:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to update subscription' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ status: 'success' });
       }
-      
-      // Update the syllabi table to mark the syllabus as purchased
-      const { error } = await supabase
-        .from('syllabi')
-        .update({ purchased: true })
-        .eq('id', syllabusId);
-      
-      if (error) {
-        console.error('Error updating syllabus purchase status:', error);
-        return NextResponse.json(
-          { error: 'Database update failed' },
-          { status: 500 }
-        );
+
+      case 'subscription.updated': {
+        const { 
+          id: subscription_id,
+          user_id,
+          status 
+        } = event.data;
+
+        // Update user's subscription details
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            subscription: subscription_id,
+            subscription_status: status
+          })
+          .eq('id', user_id);
+
+        if (updateError) {
+          console.error('Error updating subscription:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to update subscription' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ status: 'success' });
       }
-      
-      console.log(`Successfully marked syllabus ${syllabusId} as purchased`);
-      return NextResponse.json({ success: true });
+
+      case 'subscription.active': {
+        const { 
+          id: subscription_id,
+          user_id,
+          status 
+        } = event.data;
+
+        // Update user's subscription to active status
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            subscription: subscription_id,
+            subscription_status: status
+          })
+          .eq('id', user_id);
+
+        if (updateError) {
+          console.error('Error activating subscription:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to activate subscription' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ status: 'success' });
+      }
+
+      case 'subscription.cancelled':
+      case 'subscription.revoked': {
+        const { 
+          user_id,
+          status 
+        } = event.data;
+
+        // Update user's subscription status to cancelled/revoked
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            subscription_status: status,
+            subscription: null
+          })
+          .eq('id', user_id);
+
+        if (updateError) {
+          console.error(`Error ${eventType} subscription:`, updateError);
+          return NextResponse.json(
+            { error: `Failed to process ${eventType}` },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ status: 'success' });
+      }
+
+      case 'subscription.uncanceled': {
+        const { 
+          id: subscription_id,
+          user_id,
+          status 
+        } = event.data;
+
+        // Update user's subscription status back to active
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({ 
+            subscription: subscription_id,
+            subscription_status: status
+          })
+          .eq('id', user_id);
+
+        if (updateError) {
+          console.error('Error uncancelling subscription:', updateError);
+          return NextResponse.json(
+            { error: 'Failed to uncancelled subscription' },
+            { status: 500 }
+          );
+        }
+
+        return NextResponse.json({ status: 'success' });
+      }
+
+      default:
+        // Handle other webhook events or ignore them
+        console.log(`Received unhandled event type: ${eventType}`);
+        return NextResponse.json({ status: 'ignored' });
     }
-    
-    // For other event types, just acknowledge receipt
-    return NextResponse.json({ received: true });
-    
+
   } catch (error) {
     console.error('Webhook error:', error);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
