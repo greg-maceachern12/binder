@@ -26,7 +26,7 @@ export async function POST(request: Request) {
     console.log("Available headers:", Array.from(headersList.entries()));
     
     // Try multiple possible header names for the signature
-    let signature = headersList.get('polar-signature') || 
+    const signature = headersList.get('polar-signature') || 
                    headersList.get('X-Polar-Signature') || 
                    headersList.get('x-polar-signature') || 
                    headersList.get('Polar-Signature');
