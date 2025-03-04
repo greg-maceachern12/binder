@@ -19,12 +19,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
+  // Function to create or update user in the users table
+  const upsertUser = async (user: User) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .upsert({
+          id: user.id,
+          email: user.email,
+          subscription: null,
+          updated_at: new Date().toISOString(),
+        }, {
+          onConflict: 'id'
+        });
+
+      if (error) {
+        console.error('Error upserting user:', error);
+      }
+    } catch (error) {
+      console.error('Error in upsertUser:', error);
+    }
+  };
+
   useEffect(() => {
     // Check for active session
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       setSession(session);
       setUser(session?.user || null);
+      
+      // If there's a user, ensure they exist in the users table
+      if (session?.user) {
+        await upsertUser(session.user);
+      }
+      
       setLoading(false);
     };
     
@@ -32,9 +60,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
+      async (_event, session) => {
         setSession(session);
         setUser(session?.user || null);
+        
+        // If there's a user, ensure they exist in the users table
+        if (session?.user) {
+          await upsertUser(session.user);
+        }
+        
         setLoading(false);
       }
     );
