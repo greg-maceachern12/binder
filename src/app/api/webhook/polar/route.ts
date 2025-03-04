@@ -4,13 +4,29 @@ import { headers } from 'next/headers';
 import crypto from 'crypto';
 
 // Verify the webhook signature from Polar
-function verifySignature(payload: string, signature: string, secret: string) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return crypto.timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(digest)
-  );
+function verifySignature(payload: string, signatureHeader: string, secret: string) {
+  try {
+    // Parse the signature header which has format: v1,signature
+    const [version, signature] = signatureHeader.split(',');
+    
+    if (version !== 'v1') {
+      console.error(`Unsupported signature version: ${version}`);
+      return false;
+    }
+    
+    // Create HMAC using webhook secret
+    const hmac = crypto.createHmac('sha256', secret);
+    const computedSignature = hmac.update(payload).digest('base64');
+    
+    console.log('Computed signature:', computedSignature);
+    console.log('Received signature:', signature);
+    
+    // Compare the signatures
+    return computedSignature === signature;
+  } catch (error) {
+    console.error('Error verifying signature:', error);
+    return false;
+  }
 }
 
 export async function POST(request: Request) {
@@ -22,14 +38,8 @@ export async function POST(request: Request) {
     const headersList = await headers();
     console.log("Polar webhook received");
     
-    // Log all available headers for debugging
-    console.log("Available headers:", Array.from(headersList.entries()));
-    
-    // Try multiple possible header names for the signature
-    const signature = headersList.get('polar-signature') || 
-                   headersList.get('X-Polar-Signature') || 
-                   headersList.get('x-polar-signature') || 
-                   headersList.get('Polar-Signature');
+    // Get the signature from the correct header
+    const signatureHeader = headersList.get('webhook-signature');
     
     // Verify the webhook secret is configured
     const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
@@ -39,14 +49,13 @@ export async function POST(request: Request) {
     }
     
     // Check if we found a signature
-    if (!signature) {
-      console.error('No signature header found. Please check webhook configuration.');
-      // Log the first part of the payload for debugging
-      console.log('Payload preview:', payload.substring(0, 200));
+    if (!signatureHeader) {
+      console.error('No webhook-signature header found');
       return NextResponse.json({ error: 'Missing signature' }, { status: 401 });
     }
     
-    if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+    // Verify the signature
+    if (!verifySignature(payload, signatureHeader, WEBHOOK_SECRET)) {
       console.error('Signature verification failed');
       return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
