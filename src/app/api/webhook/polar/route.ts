@@ -1,13 +1,5 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
-
-// Verify the webhook signature from Polar
-function verifySignature(payload: string, signature: string, secret: string) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return signature === digest;
-}
 
 export async function POST(req: Request) {
   try {
