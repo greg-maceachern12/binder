@@ -1,45 +1,35 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-// import crypto from 'crypto';
+import { polarClient, verifySubscription } from '@/app/lib/polar/client';
+import crypto from 'crypto';
 
-// // Verify the webhook signature from Polar
-// function verifySignature(payload: string, signature: string, secret: string) {
-//   const hmac = crypto.createHmac('sha256', secret);
-//   const digest = hmac.update(payload).digest('hex');
-//   return signature === digest;
-// }
+// Verify the webhook signature from Polar
+function verifySignature(payload: string, signature: string, secret: string) {
+  const hmac = crypto.createHmac('sha256', secret);
+  const digest = hmac.update(payload).digest('hex');
+  return signature === digest;
+}
 
 export async function POST(req: Request) {
   try {
     // Get the raw body
     const payload = await req.text();
     
-    // Get the signature and timestamp from the correct headers
-    // const signatureHeader = req.headers.get('webhook-signature');
+    // Get the signature from headers
+    const signature = req.headers.get('polar-signature') || '';
+    const webhookSecret = process.env.POLAR_WEBHOOK_SECRET || '';
     
-    // // Extract the actual signature from the header (format: v1,signature)
-    // let signature = null;
-    // if (signatureHeader && signatureHeader.includes(',')) {
-    //   signature = signatureHeader.split(',')[1];
-    // }
+    // Skip verification if in development or explicitly disabled
+    const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
     
-    // // Verify the webhook signature if configured
-    // const WEBHOOK_SECRET = process.env.POLAR_WEBHOOK_SECRET;
-    
-    // // Skip verification in development if needed
-    // const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
-    
-    // if (!skipVerification && WEBHOOK_SECRET) {
-    //   if (!signature) {
-    //     console.error('No valid signature found in webhook-signature header');
-    //     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    //   }
-      
-    //   if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
-    //     console.error('Signature verification failed');
-    //     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-    //   }
-    // }
+    // Verify webhook signature except when explicitly skipped
+    if (!skipVerification && webhookSecret) {
+      const isValid = verifySignature(payload, signature, webhookSecret);
+      if (!isValid) {
+        console.error('Invalid webhook signature');
+        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      }
+    }
     
     // Parse the event payload
     const data = JSON.parse(payload);
@@ -65,29 +55,66 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No email found' }, { status: 400 });
     }
 
-    // Determine whether to clear the subscription ID
-    // - For cancellations and revocations, clear the subscription
-    const clearSubscription = ['subscription.canceled', 'subscription.revoked'].includes(data.type);
+    // Determine whether this is an active subscription event
+    const isActiveSubscriptionEvent = ['subscription.created', 'subscription.updated', 'subscription.active', 'subscription.uncanceled'].includes(data.type);
     
+    // Extract subscription ID and customer ID from the payload
+    const subscriptionId = data.data.id || null;
+    const polarId = data.data.customer?.id || null;
+    
+    // For active subscription events, verify the subscription with the API
+    let isActive = false;
+    if (isActiveSubscriptionEvent && subscriptionId) {
+      try {
+        // Verify subscription with Polar API
+        isActive = await verifySubscription(subscriptionId);
+        console.log(`Subscription ${subscriptionId} verified with API: ${isActive ? 'active' : 'inactive'}`);
+      } catch (error) {
+        console.error('Error verifying subscription with API:', error);
+        // Continue processing even if verification fails
+        // We'll use the event data as fallback
+        isActive = isActiveSubscriptionEvent; 
+      }
+    }
+
     // Prepare update data matching your schema
     const updateData = {
-      subscription_status: data.data.status,
-      subscription: clearSubscription ? null : data.data.id,
-      polar_id: data.data.user_id || data.data.customer.id,
+      polar_id: polarId,
+      subscription_id: isActive ? subscriptionId : null,
+      // Set trial_active to true for new active subscriptions to ensure they have full access
+      trial_active: isActive ? true : false,
       updated_at: new Date().toISOString()
     };
 
     console.log('Updating user subscription data:', {
       email: data.data.customer.email,
-      status: updateData.subscription_status,
-      subscription: updateData.subscription || 'null'
+      subscription_id: updateData.subscription_id || 'null',
+      polar_id: updateData.polar_id || 'null',
+      isActive
     });
+
+    // First try to find the user by email
+    const { data: existingUser, error: fetchError } = await supabase
+      .from('users')
+      .select('id, email')
+      .eq('email', data.data.customer.email)
+      .single();
+
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching user:', fetchError);
+      return NextResponse.json({ error: 'Failed to fetch user' }, { status: 500 });
+    }
+
+    if (!existingUser) {
+      console.log('User not found with email:', data.data.customer.email);
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
     // Update the user's subscription status
     const { error } = await supabase
       .from('users')
       .update(updateData)
-      .eq('email', data.data.customer.email);
+      .eq('id', existingUser.id);
 
     if (error) {
       console.error('Database error:', error);
@@ -98,8 +125,9 @@ export async function POST(req: Request) {
       message: 'Success',
       event: data.type,
       email: data.data.customer.email,
-      status: updateData.subscription_status,
-      subscription: updateData.subscription
+      subscription_id: updateData.subscription_id,
+      polar_id: updateData.polar_id,
+      isActive
     }, { status: 200 });
     
   } catch (error) {
