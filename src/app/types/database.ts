@@ -8,6 +8,7 @@ export interface DbSyllabus {
     estimated_duration: string;
     prerequisites: string[];
     image_url: string | null;  // Added this field
+    emoji: string | null;  // Added emoji field
     created_at: string;
     updated_at: string;
     chapters: DbChapter[];

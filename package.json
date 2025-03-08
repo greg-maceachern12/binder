@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@polar-sh/sdk": "^0.30.0",
+    "@supabase/auth-helpers-nextjs": "^0.10.0",
+    "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
+    "cookies-next": "^5.1.0",
     "jspdf": "^2.5.2",
     "jszip": "^3.10.1",
     "lucide-react": "^0.469.0",
