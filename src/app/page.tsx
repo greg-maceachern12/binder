@@ -3,16 +3,20 @@
 import React from 'react';
 import SyllabusForm from '@/app/components/SyllabusForm';
 import FeedbackForm from './components/FeedbackForm';
+import Image from 'next/image';
 
 export default function EnhancedHome() {
   return (
     <main className="relative min-h-screen overflow-hidden">
       {/* Blurred placeholder image in the background */}
       <div className="absolute inset-0 -z-10 overflow-hidden">
-        <img
-          src="bg.jpeg" // Replace with your image path
+        <Image
+          src="/bg.jpeg" // Make sure the image is in the public directory
           alt="Blurred background"
-          className="w-full h-full object-cover blur-[106px]"
+          fill
+          className="object-cover blur-[106px]"
+          sizes="100vw"
+          priority
         />
       </div>
 

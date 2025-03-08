@@ -7,6 +7,8 @@ import { User, AuthError } from '@supabase/supabase-js';
 type BasicUser = {
   id: string;
   email: string | null;
+  subscription_id: string | null;
+  trial_active: boolean;
 };
 
 type AuthContextType = {
@@ -32,9 +34,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {
+          // Get user data from the users table
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('subscription_id, trial_active')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching user data:', error);
+          }
+          
+          // Create the user object with subscription info if available
           setUser({
             id: session.user.id,
-            email: session.user.email || null
+            email: session.user.email || null,
+            subscription_id: userData?.subscription_id || null,
+            trial_active: userData?.trial_active || false
           });
           
           // Ensure user exists in the users table (handles signup case)
@@ -53,9 +69,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
         if (session?.user) {
+          // Get user data from the users table
+          const { data: userData, error } = await supabase
+            .from('users')
+            .select('subscription_id, trial_active')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (error && error.code !== 'PGRST116') {
+            console.error('Error fetching user data:', error);
+          }
+          
+          // Create the user object with subscription info if available
           setUser({
             id: session.user.id,
-            email: session.user.email || null
+            email: session.user.email || null,
+            subscription_id: userData?.subscription_id || null,
+            trial_active: userData?.trial_active || false
           });
           
           // Ensure user exists in the users table (handles signup case)

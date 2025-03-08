@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase/client';
 import { DbSyllabus } from '../types/database';
-import { Loader2, BookOpen, PlusCircle, Zap } from 'lucide-react';
+import { Loader2, BookOpen, PlusCircle, Zap, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 
 // Polar subscription URL
@@ -16,6 +16,9 @@ export default function Dashboard() {
   const router = useRouter();
   const [userSyllabi, setUserSyllabi] = useState<DbSyllabus[]>([]);
   const [loadingSyllabi, setLoadingSyllabi] = useState(true);
+  
+  // Determine subscription status directly from auth context
+  const subscriptionStatus = user?.subscription_id ? 'active' : user?.trial_active ? 'trialing' : 'inactive';
 
   // Redirect to login if not authenticated
   useEffect(() => {
@@ -65,24 +68,39 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto max-w-6xl p-6">
-      {/* Subscription Upsell Banner */}
-      <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl p-4 mb-8 shadow-sm">
-        <div className="flex flex-col md:flex-row items-center justify-between">
-          <div className="mb-4 md:mb-0">
-            <h2 className="text-lg font-semibold text-indigo-800">Upgrade to Premium</h2>
-            <p className="text-sm text-indigo-700">Get unlimited course generations and more features</p>
+      {/* Subscription Upsell Banner - Only show if not subscribed */}
+      {subscriptionStatus !== 'active' && (
+        <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl p-4 mb-8 shadow-sm">
+          <div className="flex flex-col md:flex-row items-center justify-between">
+            <div className="mb-4 md:mb-0">
+              <h2 className="text-lg font-semibold text-indigo-800">Upgrade to Premium</h2>
+              <p className="text-sm text-indigo-700">Get unlimited course generations and more features</p>
+            </div>
+            <a 
+              href={POLAR_SUBSCRIPTION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-all"
+            >
+              <Zap size={16} />
+              <span>Subscribe Now</span>
+            </a>
           </div>
-          <a 
-            href={POLAR_SUBSCRIPTION_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-all"
-          >
-            <Zap size={16} />
-            <span>Subscribe Now</span>
-          </a>
         </div>
-      </div>
+      )}
+      
+      {/* Active Subscription Banner */}
+      {subscriptionStatus === 'active' && (
+        <div className="bg-gradient-to-r from-green-100 to-teal-100 rounded-xl p-4 mb-8 shadow-sm">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="text-green-500 w-5 h-5" />
+              <h2 className="text-lg font-semibold text-green-800">Premium Subscription Active</h2>
+            </div>
+            <span className="text-sm text-green-700">Unlimited course generations</span>
+          </div>
+        </div>
+      )}
 
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">Your Courses</h1>

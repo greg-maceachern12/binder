@@ -1,16 +1,51 @@
 import { NextResponse } from "next/server";
 import { openai, aiModelLesson } from "@/app/lib/openai";
 import { supabase } from '@/app/lib/supabase/client';
+import { verifySubscription } from '@/app/lib/polar/client';
 
 export async function POST(request: Request) {
   try {
-    const { lessonId, lessonTitle, chapterTitle, courseTitle } = await request.json();
+    const { lessonId, lessonTitle, chapterTitle, courseTitle, userId } = await request.json();
 
     if (!lessonId || !lessonTitle || !chapterTitle || !courseTitle) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
+    }
+
+    // Check subscription status if userId is provided
+    if (userId) {
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('subscription_id, trial_active')
+        .eq('id', userId)
+        .single();
+        
+      if (userError) {
+        console.error('Error fetching user data:', userError);
+        return NextResponse.json(
+          { error: 'Failed to verify subscription status' },
+          { status: 500 }
+        );
+      }
+      
+      // Check if user has an active subscription or trial
+      let hasAccess = false;
+      
+      if (userData.subscription_id) {
+        // Verify subscription with API
+        hasAccess = await verifySubscription(userData.subscription_id);
+      } else if (userData.trial_active) {
+        hasAccess = true;
+      }
+      
+      if (!hasAccess) {
+        return NextResponse.json(
+          { error: 'Subscription required to generate lessons' },
+          { status: 403 }
+        );
+      }
     }
 
     const completion = await openai.chat.completions.create({

@@ -1,6 +1,5 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-import { verifySubscription } from '@/app/lib/polar/client';
 import crypto from 'crypto';
 
 // Verify the webhook signature from Polar
@@ -55,34 +54,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'No email found' }, { status: 400 });
     }
 
-    // Determine whether this is an active subscription event
-    const isActiveSubscriptionEvent = ['subscription.created', 'subscription.updated', 'subscription.active', 'subscription.uncanceled'].includes(data.type);
-    
     // Extract subscription ID and customer ID from the payload
     const subscriptionId = data.data.id || null;
     const polarId = data.data.customer?.id || null;
     
-    // For active subscription events, verify the subscription with the API
-    let isActive = false;
-    if (isActiveSubscriptionEvent && subscriptionId) {
-      try {
-        // Verify subscription with Polar API
-        isActive = await verifySubscription(subscriptionId);
-        console.log(`Subscription ${subscriptionId} verified with API: ${isActive ? 'active' : 'inactive'}`);
-      } catch (error) {
-        console.error('Error verifying subscription with API:', error);
-        // Continue processing even if verification fails
-        // We'll use the event data as fallback
-        isActive = isActiveSubscriptionEvent; 
-      }
-    }
+    // Simple check for active subscription
+    // Consider it active if either:
+    // 1. The event type indicates active (created, updated, active, uncanceled)
+    // 2. The status field explicitly says "active"
+    const activeEventTypes = ['subscription.created', 'subscription.updated', 'subscription.active', 'subscription.uncanceled'];
+    const isActive = activeEventTypes.includes(data.type) || data.data.status === 'active';
+    
+    console.log(`Subscription status determined: ${isActive ? 'active' : 'inactive'} (event type: ${data.type}, status: ${data.data.status || 'none'})`);
 
     // Prepare update data matching your schema
     const updateData = {
       polar_id: polarId,
       subscription_id: isActive ? subscriptionId : null,
-      // Set trial_active to true for new active subscriptions to ensure they have full access
-      trial_active: isActive ? true : false,
+      trial_active: isActive,
       updated_at: new Date().toISOString()
     };
 

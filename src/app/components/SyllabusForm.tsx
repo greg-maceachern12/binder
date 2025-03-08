@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink, Zap, CheckCircle, AlertCircle } from 'lucide-react';
 import { supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -61,9 +62,32 @@ export default function SyllabusForm() {
   const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
   const [coursesGenerated, setCoursesGenerated] = useState(12548); // Initial count of courses generated
   const topicInputRef = useRef<HTMLInputElement>(null);
+  const router = useRouter();
+
+  // Polar subscription URL
+  const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
+
+  // Check if user has access (either subscription or trial)
+  const hasAccess = user ? (!!user.subscription_id || !!user.trial_active) : false;
+  
+  // Check if user is on trial but doesn't have subscription
+  const isOnTrial = user?.trial_active && !user?.subscription_id;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // If user is not logged in, redirect to login page
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+    
+    // If user doesn't have access, redirect to subscription page
+    if (!hasAccess) {
+      window.open(POLAR_SUBSCRIPTION_URL, '_blank');
+      return;
+    }
+    
     setIsLoading(true);
     setError(null);
     // Clear success message when starting new generation
@@ -128,9 +152,35 @@ export default function SyllabusForm() {
     <div className="w-full max-w-6xl mx-auto px-4">
       {/* Hero Section */}
       <div className="text-center mb-8 md:mb-12">
-        <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
-          Now using Sonar Pro by Perplexity AI
-        </div>
+        {!user ? (
+          <div 
+            onClick={() => router.push('/login')} 
+            className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full cursor-pointer hover:bg-green-100 transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <span>Sign up for Premium</span>
+              <Zap className="w-3 h-3" />
+            </span>
+          </div>
+        ) : !hasAccess ? (
+          <div 
+            onClick={() => window.open(POLAR_SUBSCRIPTION_URL, '_blank')}
+            className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full cursor-pointer hover:bg-green-100 transition-colors"
+          >
+            <span className="flex items-center gap-1.5">
+              <span>Upgrade to Premium for unlimited generations</span>
+              <Zap className="w-3 h-3" />
+            </span>
+          </div>
+        ) : (
+          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
+            <span className="flex items-center gap-1.5">
+              <span>Premium Access Enabled</span>
+              <CheckCircle className="w-3 h-3" />
+            </span>
+          </div>
+        )}
+        
         <div className="relative inline-block">
           <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
           <div className="relative p-3 rounded-full">
@@ -223,6 +273,14 @@ export default function SyllabusForm() {
                     ×
                   </button>
                 )}
+                
+                {/* Trial remaining courses indicator */}
+                {isOnTrial && (
+                  <div className="absolute -bottom-6 left-2 text-xs text-orange-600 font-medium flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    <span>1 course generation remaining on trial</span>
+                  </div>
+                )}
               </div>
               <button
                 type="submit"
@@ -233,6 +291,16 @@ export default function SyllabusForm() {
                   <>
                     <Loader2 className="w-5 h-5 animate-spin" />
                     <span>Generating...</span>
+                  </>
+                ) : !user ? (
+                  <>
+                    <Zap className="w-5 h-5" />
+                    <span>Sign In</span>
+                  </>
+                ) : !hasAccess ? (
+                  <>
+                    <Zap className="w-5 h-5" />
+                    <span>Upgrade</span>
                   </>
                 ) : (
                   <>

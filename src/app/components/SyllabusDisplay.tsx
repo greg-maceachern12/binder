@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2, Sparkles } from 'lucide-react';
 import { Syllabus, DetailedLesson } from '@/app/types';
+import Image from 'next/image';
 import CourseDownloader from './CourseDownloader';
 import LessonViewer from './LessonViewer';
 import { useRouter } from 'next/navigation';
@@ -53,10 +54,12 @@ export default function SyllabusDisplay({
         <div className={`relative px-6 md:px-8 py-8 md:py-10 ${!syllabus.image_url ? "bg-gradient-to-br from-orange-50 via-rose-50 to-purple-100" : ''}`}>
           {syllabus.image_url && (
             <>
-              <img
+              <Image
                 src={syllabus.image_url}
                 alt={syllabus.title}
-                className="absolute inset-0 w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
               />
               <div className="absolute inset-0 bg-black/50" />
             </>

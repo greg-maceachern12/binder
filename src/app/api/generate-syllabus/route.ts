@@ -129,6 +129,29 @@ export async function POST(request: Request) {
       if (lessonsError) throw lessonsError;
     }
 
+    // If user is on a trial (has no subscription_id), update trial_active to false
+    if (userId) {
+      // First get the user to check their current status
+      const { data: userData, error: userError } = await supabase
+        .from("users")
+        .select("subscription_id, trial_active")
+        .eq("id", userId)
+        .single();
+      
+      if (!userError && userData && userData.trial_active) {
+        // User is on trial and has no subscription, so turn off their trial
+        console.log(`Setting trial_active to false for user ${userId} after successful generation`);
+        const { error: updateError } = await supabase
+          .from("users")
+          .update({ trial_active: false })
+          .eq("id", userId);
+        
+        if (updateError) {
+          console.error("Failed to update user trial status:", updateError);
+        }
+      }
+    }
+
     // Return the syllabus ID as the slug
     return NextResponse.json({
       success: true,

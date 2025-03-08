@@ -3,17 +3,20 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase/client';
-import { Syllabus, DetailedLesson, Chapter, SyllabusLesson } from '@/app/types';
+import { Syllabus, Chapter, SyllabusLesson, DetailedLesson } from '@/app/types';
 import { DbSyllabus, DbChapter, DbLesson } from '@/app/types/database';
 import SyllabusDisplay from '@/app/components/SyllabusDisplay';
+import { useAuth } from '@/app/context/AuthContext';
 
 export default function SyllabusPage() {
     const params = useParams();
     const router = useRouter();
+    const { user } = useAuth();
     const [syllabus, setSyllabus] = useState<Syllabus | null>(null);
     const [generatingLessons, setGeneratingLessons] = useState(false);
     const [generatedLessons, setGeneratedLessons] = useState<{ [key: string]: DetailedLesson }>({});
     const [currentGeneratingLesson, setCurrentGeneratingLesson] = useState<string>('');
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchSyllabus = async () => {
@@ -96,11 +99,16 @@ export default function SyllabusPage() {
                 lessonId: lesson.id,
                 lessonTitle: lesson.title,
                 chapterTitle: chapter.title,
-                courseTitle: syllabus?.title
+                courseTitle: syllabus?.title,
+                userId: user?.id
             })
         });
 
         if (!response.ok) {
+            if (response.status === 403) {
+                setError("You need an active subscription to generate lessons");
+                return null;
+            }
             throw new Error('Failed to generate lesson');
         }
 
@@ -118,6 +126,32 @@ export default function SyllabusPage() {
         return data.lesson;
     };
 
+    const generateAllLessons = async () => {
+        setGeneratingLessons(true);
+
+        try {
+            const newGeneratedLessons = { ...generatedLessons };
+
+            for (const chapter of syllabus!.chapters) {
+                for (const lesson of chapter.lessons) {
+                    if (newGeneratedLessons[lesson.id]) {
+                        continue;
+                    }
+
+                    setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+                    const response = await generateLesson(chapter, lesson);
+                    newGeneratedLessons[lesson.id] = response;
+                    setGeneratedLessons({ ...newGeneratedLessons });
+                }
+            }
+        } catch (error) {
+            console.error('Failed to generate lessons:', error);
+        }
+
+        setGeneratingLessons(false);
+        setCurrentGeneratingLesson('');
+    };
+
     if (!syllabus) {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -127,40 +161,29 @@ export default function SyllabusPage() {
     }
 
     return (
-
         <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
             <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
-                <SyllabusDisplay
-                    syllabus={syllabus}
-                    onGenerateFullCourse={async () => {
-                        setGeneratingLessons(true);
-
-                        try {
-                            const newGeneratedLessons = { ...generatedLessons };
-
-                            for (const chapter of syllabus.chapters) {
-                                for (const lesson of chapter.lessons) {
-                                    if (newGeneratedLessons[lesson.id]) {
-                                        continue;
-                                    }
-
-                                    setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
-                                    const response = await generateLesson(chapter, lesson);
-                                    newGeneratedLessons[lesson.id] = response;
-                                    setGeneratedLessons({ ...newGeneratedLessons });
-                                }
-                            }
-                        } catch (error) {
-                            console.error('Failed to generate lessons:', error);
-                        }
-
-                        setGeneratingLessons(false);
-                        setCurrentGeneratingLesson('');
-                    }}
-                    generatingLessons={generatingLessons}
-                    currentGeneratingLesson={currentGeneratingLesson}
-                    generatedLessons={generatedLessons}
-                />
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6 flex items-center">
+                        <span className="flex-grow">{error}</span>
+                        <button 
+                            onClick={() => setError(null)}
+                            className="text-red-600 hover:text-red-800"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                )}
+                
+                {syllabus && (
+                    <SyllabusDisplay
+                        syllabus={syllabus}
+                        onGenerateFullCourse={generateAllLessons}
+                        generatingLessons={generatingLessons}
+                        currentGeneratingLesson={currentGeneratingLesson}
+                        generatedLessons={generatedLessons}
+                    />
+                )}
             </div>
         </main>
     );

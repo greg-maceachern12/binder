@@ -1,12 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Loader2, Mail, Sparkles, Zap } from 'lucide-react';
+import { Loader2, Mail, Sparkles } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 
-// Polar subscription URL
-const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -50,7 +48,7 @@ export default function Auth() {
         <p className="text-center text-gray-500 mb-6">Sign in to start learning</p>
         
         {/* Trial Info */}
-        <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
+        {/* <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
           <h3 className="text-sm font-semibold text-purple-700 mb-1">Free Trial + Premium Option</h3>
           <p className="text-xs text-gray-600 mb-2">
             New users get one free course generation. Subscribe for unlimited access.
@@ -63,7 +61,7 @@ export default function Auth() {
           >
             <Zap className="w-3 h-3" /> View subscription options
           </a>
-        </div>
+        </div> */}
         
         <form onSubmit={handleSignIn}>
           <div className="mb-5">
