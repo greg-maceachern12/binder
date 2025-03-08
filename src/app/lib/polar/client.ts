@@ -8,9 +8,9 @@ if (!POLAR_API_KEY) {
   console.warn("Polar API key is not set. Subscription verification will not work properly.");
 }
 
-// Initialize Polar client
+// Initialize Polar client with access token
 export const polar = new Polar({
-  accessToken: process.env.NEXT_POLAR_ACCESS_TOKEN ?? "",
+  accessToken: POLAR_API_KEY || "",
 });
 
 export async function verifySubscription(subscriptionId: string): Promise<boolean> {
@@ -25,8 +25,8 @@ export async function verifySubscription(subscriptionId: string): Promise<boolea
     }
 
     // Fetch subscription details from Polar API
-    const subscription = await polar.customerPortal.subscriptions.get({
-      subscriptionId: subscriptionId,
+    const subscription = await polar.subscriptions.get({
+      id:subscriptionId,
     });
     
     console.log(subscription);
