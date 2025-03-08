@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2, Sparkles } from 'lucide-react';
 import { Syllabus, DetailedLesson } from '@/app/types';
 import Image from 'next/image';
 import CourseDownloader from './CourseDownloader';
-import LessonViewer from './LessonViewer';
+// Lazy load the LessonViewer component
+const LessonViewer = lazy(() => import('./LessonViewer'));
 import { useRouter } from 'next/navigation';
 
 interface Props {
@@ -25,17 +26,17 @@ export default function SyllabusDisplay({
   const [copied, setCopied] = useState(false);
   const router = useRouter();
 
-  const allLessonsGenerated = syllabus.chapters.every(chapter =>
+  // Memoize computationally expensive operations
+  const allLessonsGenerated = useMemo(() => syllabus.chapters.every(chapter =>
     chapter.lessons.every(lesson => generatedLessons[lesson.id])
-  );
+  ), [syllabus.chapters, generatedLessons]);
 
-  const isCurrentlyGeneratingLesson = (chapterTitle: string, lessonTitle: string) => {
+  const isCurrentlyGeneratingLesson = useMemo(() => (chapterTitle: string, lessonTitle: string) => {
     return generatingLessons && currentGeneratingLesson === `${chapterTitle} - ${lessonTitle}`;
-  };
+  }, [generatingLessons, currentGeneratingLesson]);
 
-  const totalLessons = syllabus.chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0);
-  const completedLessons = Object.keys(generatedLessons).length;
-
+  const totalLessons = useMemo(() => syllabus.chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0), [syllabus.chapters]);
+  const completedLessons = useMemo(() => Object.keys(generatedLessons).length, [generatedLessons]);
 
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-0">
@@ -58,8 +59,11 @@ export default function SyllabusDisplay({
                 src={syllabus.image_url}
                 alt={syllabus.title}
                 fill
+                priority
                 className="object-cover"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                loading="eager"
+                fetchPriority="high"
               />
               <div className="absolute inset-0 bg-black/50" />
             </>
@@ -249,15 +253,22 @@ export default function SyllabusDisplay({
         </div>
       </div>
 
-      {/* Lesson Viewer Modal */}
-      {
-        selectedLessonId && generatedLessons[selectedLessonId] && (
+      {/* Lesson Viewer Modal (Lazy loaded) */}
+      {selectedLessonId && (
+        <Suspense fallback={
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
+            <div className="p-4 bg-white rounded-lg shadow-xl">
+              <Loader2 className="w-8 h-8 animate-spin text-indigo-600 mx-auto" />
+              <p className="text-center mt-2">Loading lesson...</p>
+            </div>
+          </div>
+        }>
           <LessonViewer
             lesson={generatedLessons[selectedLessonId]}
             onClose={() => setSelectedLessonId(null)}
           />
-        )
-      }
+        </Suspense>
+      )}
     </div>
   );
 }
