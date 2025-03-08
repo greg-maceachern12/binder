@@ -2,98 +2,145 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase/client';
-import { User, Session } from '@supabase/supabase-js';
+import { User, AuthError } from '@supabase/supabase-js';
+
+type BasicUser = {
+  id: string;
+  email: string | null;
+};
 
 type AuthContextType = {
-  user: User | null;
-  session: Session | null;
+  user: BasicUser | null;
   loading: boolean;
-  signIn: (email: string) => Promise<{ error: Error | null }>;
+  signIn: (email: string) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
+  const [user, setUser] = useState<BasicUser | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Function to create or update user in the users table
-  const upsertUser = async (user: User) => {
-    try {
-      const { error } = await supabase
-        .from('users')
-        .upsert({
-          id: user.id,
-          email: user.email,
-          subscription: null,
-          updated_at: new Date().toISOString(),
-        }, {
-          onConflict: 'id'
-        });
-
-      if (error) {
-        console.error('Error upserting user:', error);
-      }
-    } catch (error) {
-      console.error('Error in upsertUser:', error);
-    }
-  };
-
+  // Set up auth state listener
   useEffect(() => {
-    // Check for active session
-    const getSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      setSession(session);
-      setUser(session?.user || null);
+    // Get initial session
+    const getInitialSession = async () => {
+      setLoading(true);
       
-      // If there's a user, ensure they exist in the users table
-      if (session?.user) {
-        await upsertUser(session.user);
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.user) {
+          setUser({
+            id: session.user.id,
+            email: session.user.email || null
+          });
+          
+          // Ensure user exists in the users table (handles signup case)
+          await ensureUserInDatabase(session.user);
+        }
+      } catch (error) {
+        console.error('Error getting session:', error);
+      } finally {
+        setLoading(false);
       }
-      
-      setLoading(false);
     };
     
-    getSession();
-
+    getInitialSession();
+    
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (_event, session) => {
-        setSession(session);
-        setUser(session?.user || null);
-        
-        // If there's a user, ensure they exist in the users table
         if (session?.user) {
-          await upsertUser(session.user);
+          setUser({
+            id: session.user.id,
+            email: session.user.email || null
+          });
+          
+          // Ensure user exists in the users table (handles signup case)
+          await ensureUserInDatabase(session.user);
+        } else {
+          setUser(null);
         }
         
         setLoading(false);
       }
     );
-
+    
     return () => {
       subscription.unsubscribe();
-    }
+    };
   }, []);
-
-  const signIn = async (email: string) => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
-      },
-    });
-    return { error };
+  
+  // Ensure user exists in database
+  const ensureUserInDatabase = async (user: User) => {
+    try {
+      // Check if user exists in the users table
+      const { error: fetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+      
+      // Only create user if they don't exist
+      if (fetchError && fetchError.code === 'PGRST116') { // No rows returned
+        // Create new user record
+        await supabase.from('users').insert({
+          id: user.id,
+          email: user.email,
+          trial_active: true
+        });
+      }
+    } catch (error) {
+      console.error('Error ensuring user in database:', error);
+    }
   };
-
+  
+  // Sign in with magic link
+  const signIn = async (email: string) => {
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard`
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
+      
+      return {
+        success: true,
+        message: 'Check your email for the login link'
+      };
+    } catch (error: unknown) {
+      console.error('Sign in error:', error);
+      const message = error instanceof AuthError ? error.message : 'Failed to send the login link';
+      return {
+        success: false,
+        message
+      };
+    }
+  };
+  
+  // Sign out
   const signOut = async () => {
-    await supabase.auth.signOut();
+    try {
+      await supabase.auth.signOut();
+    } catch (error) {
+      console.error('Error signing out:', error);
+    }
   };
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      loading,
+      signIn,
+      signOut
+    }}>
       {children}
     </AuthContext.Provider>
   );

@@ -5,21 +5,11 @@ import Image from 'next/image';
 import { User, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useRouter } from 'next/navigation';
 
 export default function Header() {
   const { user, signOut } = useAuth();
-  const router = useRouter();
   const [showMenu, setShowMenu] = useState(false);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      router.push('/'); // Redirect to home page after signing out
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  };
 
   return (
     <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm">
@@ -52,7 +42,7 @@ export default function Header() {
                     Dashboard
                   </Link>
                   <button
-                    onClick={handleSignOut}
+                     onClick={() => signOut()}
                     className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
                   >
                     <div className="flex items-center gap-2">

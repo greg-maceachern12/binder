@@ -9,15 +9,10 @@ if (!POLAR_API_KEY) {
 }
 
 // Initialize Polar client
-export const polarClient = new Polar({
-  accessToken: POLAR_API_KEY || "",
+export const polar = new Polar({
+  accessToken: process.env.NEXT_POLAR_ACCESS_TOKEN ?? "",
 });
 
-/**
- * Check if a subscription is active using the Polar SDK
- * @param subscriptionId - The Polar subscription ID to verify
- * @returns Promise<boolean> - True if subscription is active, false otherwise
- */
 export async function verifySubscription(subscriptionId: string): Promise<boolean> {
   try {
     if (!POLAR_API_KEY) {
@@ -30,8 +25,11 @@ export async function verifySubscription(subscriptionId: string): Promise<boolea
     }
 
     // Fetch subscription details from Polar API
-    const subscription = await polarClient.subscriptions.retrieve(subscriptionId);
+    const subscription = await polar.customerPortal.subscriptions.get({
+      subscriptionId: subscriptionId,
+    });
     
+    console.log(subscription);
     // Check if subscription status is active
     return subscription && subscription.status === "active";
   } catch (error) {
@@ -39,45 +37,3 @@ export async function verifySubscription(subscriptionId: string): Promise<boolea
     return false;
   }
 }
-
-/**
- * Get customer details from Polar
- * @param customerId - The Polar customer ID
- * @returns Promise with customer details or null if not found
- */
-export async function getCustomerDetails(customerId: string) {
-  try {
-    if (!POLAR_API_KEY || !customerId) {
-      return null;
-    }
-
-    // Fetch customer details from Polar API
-    return await polarClient.customers.retrieve(customerId);
-  } catch (error) {
-    console.error("Error fetching Polar customer details:", error);
-    return null;
-  }
-}
-
-/**
- * List all subscriptions for a customer
- * @param customerId - The Polar customer ID
- * @returns Promise with subscriptions array or empty array if none/error
- */
-export async function listCustomerSubscriptions(customerId: string) {
-  try {
-    if (!POLAR_API_KEY || !customerId) {
-      return [];
-    }
-
-    // List all subscriptions for the customer
-    const response = await polarClient.subscriptions.list({
-      customerId: customerId
-    });
-    
-    return response.items || [];
-  } catch (error) {
-    console.error("Error listing customer subscriptions:", error);
-    return [];
-  }
-} 

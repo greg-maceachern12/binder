@@ -1,30 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { Loader2, Mail, Sparkles } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Loader2, Mail, Sparkles, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useRouter } from 'next/navigation';
+
+// Polar subscription URL
+const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
-  const [message, setMessage] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const { signIn } = useAuth();
+  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const { user, loading, signIn } = useAuth();
+  const router = useRouter();
+  
+  // Redirect to dashboard if already logged in
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-
-    try {
-      const { error } = await signIn(email);
-      if (error) throw error;
-      setMessage('Check your email for the magic link!');
-    } catch (error: Error | unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to send magic link';
-      setMessage(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+    
+    if (!email) return;
+    
+    const result = await signIn(email);
+    
+    setMessage({
+      text: result.message,
+      type: result.success ? 'success' : 'error'
+    });
   };
 
   return (
@@ -40,31 +47,54 @@ export default function Auth() {
         </div>
         
         <h2 className="text-2xl font-bold mb-2 text-center text-gray-800">Welcome to PrimerAI</h2>
-        <p className="text-center text-gray-500 mb-6">Sign in with your email to continue</p>
+        <p className="text-center text-gray-500 mb-6">Sign in to start learning</p>
+        
+        {/* Trial Info */}
+        <div className="mb-6 bg-gradient-to-r from-purple-50 to-indigo-50 p-4 rounded-xl border border-purple-100">
+          <h3 className="text-sm font-semibold text-purple-700 mb-1">Free Trial + Premium Option</h3>
+          <p className="text-xs text-gray-600 mb-2">
+            New users get one free course generation. Subscribe for unlimited access.
+          </p>
+          <a 
+            href={POLAR_SUBSCRIPTION_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-xs flex items-center gap-1 text-indigo-600 hover:text-indigo-800"
+          >
+            <Zap className="w-3 h-3" /> View subscription options
+          </a>
+        </div>
         
         <form onSubmit={handleSignIn}>
           <div className="mb-5">
             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
               Email Address
             </label>
-            <div className="relative group">
-              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-purple-500 transition-colors duration-200" />
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
               <input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
-                className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-gray-50 transition-all duration-200"
+                className="w-full pl-11 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-200 focus:border-purple-400 bg-gray-50"
                 required
+                disabled={loading}
               />
             </div>
           </div>
           
+          {message && (
+            <div className={`mb-4 p-3 rounded-lg ${message.type === 'success' ? 'bg-green-50 text-green-700 border border-green-100' : 'bg-red-50 text-red-600 border border-red-100'}`}>
+              {message.text}
+            </div>
+          )}
+          
           <button
             type="submit"
-            disabled={loading || !email}
-            className="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-sm hover:shadow transition-all duration-200"
+            disabled={loading}
+            className="w-full py-2.5 px-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white rounded-xl hover:from-pink-600 hover:to-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {loading ? (
               <>
@@ -77,19 +107,9 @@ export default function Auth() {
           </button>
         </form>
         
-        {message && (
-          <div className={`mt-5 p-4 rounded-lg ${
-            message.includes('Check') 
-              ? 'bg-gradient-to-r from-green-50 to-teal-50 text-green-700 border border-green-100' 
-              : 'bg-gradient-to-r from-red-50 to-pink-50 text-red-600 border border-red-100'
-          }`}>
-            {message}
-          </div>
-        )}
-        
-        <div className="mt-6 pt-6 border-t border-gray-100 text-center">
-          <p className="text-sm text-gray-500">
-            By signing in, you agree to our <a href="#" className="text-purple-600 hover:text-purple-800">Terms</a> and <a href="#" className="text-purple-600 hover:text-purple-800">Privacy Policy</a>
+        <div className="mt-6 pt-6 border-t border-gray-100">
+          <p className="text-xs text-gray-500 text-center">
+            By signing in, you agree to our Terms and Privacy Policy
           </p>
         </div>
       </div>

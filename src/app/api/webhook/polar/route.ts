@@ -1,6 +1,6 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-import { polarClient, verifySubscription } from '@/app/lib/polar/client';
+import { verifySubscription } from '@/app/lib/polar/client';
 import crypto from 'crypto';
 
 // Verify the webhook signature from Polar
