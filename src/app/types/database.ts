@@ -1,39 +1,37 @@
 import { DetailedLesson } from '@/app/types';
 
-export interface DbSyllabus {
+export type DbLesson = {
+    id: string;
+    title: string;
+    description: string | null;
+    order_index: number;
+    content?: any;
+    requires_auth?: boolean;
+    created_at: string;
+    updated_at: string;
+};
+
+export type DbChapter = {
+    id: string;
+    title: string;
+    description: string | null;
+    order_index: number;
+    emoji: string | null;
+    estimated_duration: string | null;
+    lessons: DbLesson[];
+    created_at: string;
+    updated_at: string;
+};
+
+export type DbSyllabus = {
     id: string;
     title: string;
     description: string;
     difficulty_level: string;
     estimated_duration: string;
-    prerequisites: string[];
-    image_url: string | null;  // Added this field
-    emoji: string | null;  // Added emoji field
-    created_at: string;
-    updated_at: string;
+    prerequisites: string[] | null;
+    image_url: string | null;
     chapters: DbChapter[];
-}
-  
-export interface DbChapter {
-    id: string;
-    syllabus_id: string;
-    title: string;
-    description: string;
-    estimated_duration: string;
-    emoji: string;
-    order_index: number;
     created_at: string;
     updated_at: string;
-    lessons: DbLesson[];
-}
-  
-export interface DbLesson {
-    id: string;
-    chapter_id: string;
-    title: string;
-    description: string | null;
-    order_index: number;
-    content: DetailedLesson | null;
-    created_at: string;
-    updated_at: string;
-}
+};

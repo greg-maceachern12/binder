@@ -1,31 +1,23 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../lib/supabase/client';
 import { DbSyllabus } from '../types/database';
 import { Loader2, BookOpen, PlusCircle, Zap, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
+import ProtectedRoute from '../components/ProtectedRoute';
 
 // Polar subscription URL
 const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
 
 export default function Dashboard() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   const [userSyllabi, setUserSyllabi] = useState<DbSyllabus[]>([]);
   const [loadingSyllabi, setLoadingSyllabi] = useState(true);
   
   // Determine subscription status directly from auth context
-  const subscriptionStatus = user?.subscription_id ? 'active' : user?.trial_active ? 'trialing' : 'inactive';
-
-  // Redirect to login if not authenticated
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  const subscriptionStatus = user?.has_subscription ? 'active' : user?.trial_active ? 'trialing' : 'inactive';
 
   // Fetch user syllabi when user is available
   useEffect(() => {
@@ -48,110 +40,150 @@ export default function Dashboard() {
         
         setUserSyllabi(data || []);
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Error fetching syllabi:', error);
       } finally {
         setLoadingSyllabi(false);
       }
     };
-
+    
     fetchSyllabi();
   }, [user]);
 
-  // Show loading state
-  if (loading || !user) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Loader2 className="w-10 h-10 animate-spin text-indigo-600" />
-      </div>
-    );
-  }
-
-  return (
-    <div className="container mx-auto max-w-6xl p-6">
-      {/* Subscription Upsell Banner - Only show if not subscribed */}
-      {subscriptionStatus !== 'active' && (
-        <div className="bg-gradient-to-r from-purple-100 to-indigo-100 rounded-xl p-4 mb-8 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center justify-between">
-            <div className="mb-4 md:mb-0">
-              <h2 className="text-lg font-semibold text-indigo-800">Upgrade to Premium</h2>
-              <p className="text-sm text-indigo-700">Get unlimited course generations and more features</p>
+  // Main dashboard content that will be wrapped by ProtectedRoute
+  const DashboardContent = () => (
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+              My Courses
+            </h1>
+            <p className="text-gray-500">
+              {userSyllabi.length > 0 
+                ? 'Select a course to continue or create a new one' 
+                : 'Create your first course to get started'}
+            </p>
+          </div>
+          
+          <div className="mt-4 md:mt-0">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-sm font-medium"
+            >
+              <PlusCircle className="w-4 h-4" />
+              <span>Create New Course</span>
+            </Link>
+          </div>
+        </div>
+        
+        {/* Subscription Status Banner */}
+        {subscriptionStatus === 'inactive' && (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-amber-100 p-2 rounded-full text-amber-600 mt-0.5">
+                <Zap className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Your trial has ended</h3>
+                <p className="text-gray-500 text-sm">Subscribe to continue generating courses</p>
+              </div>
             </div>
-            <a 
+            <a
               href={POLAR_SUBSCRIPTION_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700 transition-all"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 text-sm font-medium whitespace-nowrap"
             >
-              <Zap size={16} />
-              <span>Subscribe Now</span>
+              Subscribe Now
             </a>
           </div>
-        </div>
-      )}
-      
-      {/* Active Subscription Banner */}
-      {subscriptionStatus === 'active' && (
-        <div className="bg-gradient-to-r from-green-100 to-teal-100 rounded-xl p-4 mb-8 shadow-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <CheckCircle className="text-green-500 w-5 h-5" />
-              <h2 className="text-lg font-semibold text-green-800">Premium Subscription Active</h2>
-            </div>
-            <span className="text-sm text-green-700">Unlimited course generations</span>
-          </div>
-        </div>
-      )}
-
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold">Your Courses</h1>
-        <Link
-          href="/syllabus/new"
-          className="bg-indigo-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-indigo-700"
-        >
-          <PlusCircle size={16} />
-          <span>Create Course</span>
-        </Link>
-      </div>
-
-      {loadingSyllabi ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-        </div>
-      ) : userSyllabi.length === 0 ? (
-        <div className="bg-white rounded-xl shadow p-8 text-center">
-          <div className="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <BookOpen className="w-8 h-8 text-indigo-500" />
-          </div>
-          <h2 className="text-xl font-medium mb-2">No courses yet</h2>
-          <p className="text-gray-500 mb-2">Create your first course to get started</p>
-          <p className="text-indigo-600 text-sm mb-6">You have one free course generation with your trial</p>
-          <Link
-            href="/syllabus/new"
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg inline-flex items-center gap-2 hover:bg-indigo-700"
-          >
-            <PlusCircle size={16} />
-            <span>Create Your First Course</span>
-          </Link>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {userSyllabi.map((syllabus) => (
-            <Link 
-              key={syllabus.id} 
-              href={`/syllabus/${syllabus.id}`}
-              className="bg-white rounded-xl shadow p-5 transition-all hover:shadow-md"
-            >
-              <h3 className="text-lg font-medium mb-2">{syllabus.title}</h3>
-              <p className="text-gray-500 line-clamp-2 mb-3">
-                {syllabus.description || 'No description available'}
-              </p>
-              <div className="text-xs text-gray-400">
-                {new Date(syllabus.created_at).toLocaleDateString()}
+        )}
+        
+        {subscriptionStatus === 'trialing' && (
+          <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-purple-100 p-2 rounded-full text-purple-600 mt-0.5">
+                <Zap className="w-5 h-5" />
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
-    </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Free trial active</h3>
+                <p className="text-gray-500 text-sm">You can generate one full course for free</p>
+              </div>
+            </div>
+            <a
+              href={POLAR_SUBSCRIPTION_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 border border-purple-200 text-purple-700 bg-purple-50 rounded-lg hover:bg-purple-100 hover:border-purple-300 text-sm font-medium whitespace-nowrap"
+            >
+              Upgrade to Premium
+            </a>
+          </div>
+        )}
+        
+        {subscriptionStatus === 'active' && (
+          <div className="bg-white rounded-xl shadow-sm border border-green-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="bg-green-100 p-2 rounded-full text-green-600 mt-0.5">
+                <CheckCircle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="font-medium text-gray-900">Premium subscription active</h3>
+                <p className="text-gray-500 text-sm">You have unlimited access to all features</p>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Courses Grid / List */}
+        {loadingSyllabi ? (
+          <div className="flex items-center justify-center min-h-[200px]">
+            <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+          </div>
+        ) : userSyllabi.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 py-12 text-center">
+            <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4 flex items-center justify-center">
+              <BookOpen className="w-8 h-8" />
+            </div>
+            <h2 className="text-xl font-medium text-gray-800 mb-2">No courses yet</h2>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              Create your first AI-generated course by clicking the button above
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userSyllabi.map((syllabus) => (
+              <Link 
+                key={syllabus.id} 
+                href={`/syllabus/${syllabus.id}`}
+                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all flex flex-col h-full"
+              >
+                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6">
+                  <h3 className="text-xl font-medium text-gray-900 mb-2">
+                    {syllabus.title}
+                  </h3>
+                  <p className="text-gray-600 line-clamp-2">
+                    {syllabus.description}
+                  </p>
+                </div>
+                <div className="p-4 border-t border-gray-100 mt-auto">
+                  <div className="flex justify-between items-center text-sm text-gray-500">
+                    <span>Difficulty: {syllabus.difficulty_level}</span>
+                    <span>{syllabus.estimated_duration}</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
+    </main>
+  );
+  
+  // Wrap the dashboard content with the ProtectedRoute component
+  return (
+    <ProtectedRoute>
+      <DashboardContent />
+    </ProtectedRoute>
   );
 } 

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink, Zap, CheckCircle, AlertCircle } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink, Zap, CheckCircle, AlertCircle, Sparkles, Lock } from 'lucide-react';
 import { supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import UpsellDialog from './UpsellDialog';
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -60,9 +61,14 @@ export default function SyllabusForm() {
   const [error, setError] = useState<string | null>(null);
   const [syllabusUrl, setSyllabusUrl] = useState<string | null>(null);
   const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
-  const [coursesGenerated, setCoursesGenerated] = useState(12548); // Initial count of courses generated
+  const [coursesGenerated, setCoursesGenerated] = useState<number | null>(null);
+  const [showTopics, setShowTopics] = useState(false);
   const topicInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  
+  // Upsell dialog state
+  const [showUpsell, setShowUpsell] = useState(false);
+  const [lastTypedTime, setLastTypedTime] = useState<number>(0);
 
   // Polar subscription URL
   const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
@@ -73,6 +79,60 @@ export default function SyllabusForm() {
   // Check if user is on trial but doesn't have subscription
   const isOnTrial = user?.trial_active && !user?.subscription_id;
 
+  // Check if user has premium subscription
+  const hasPremium = user?.subscription_id ? true : false;
+
+  // Show upsell dialog after 4 seconds for eligible users (logged in but no subscription or trial)
+  useEffect(() => {
+    // User is eligible if they're logged in but don't have access
+    const isEligible = user && !hasAccess;
+    
+    if (isEligible) {
+      const timer = setTimeout(() => {
+        setShowUpsell(true);
+      }, 4000); // Show after 4 seconds
+      
+      return () => clearTimeout(timer);
+    }
+  }, [user, hasAccess]);
+
+  // Check if user has access to premium features (subscription only)
+  const hasPremiumAccess = user?.subscription_id ? true : false;
+  
+  // Check if user has access to generate the selected course type
+  const canGenerateSelectedCourse = useCallback(() => {
+    // Free trial users can only generate primer courses
+    if (courseType === 'primer') {
+      return hasAccess; // Either premium or trial can generate primers
+    } else {
+      // Full course generation requires premium subscription
+      return hasPremiumAccess; // Only premium users can generate full courses
+    }
+  }, [courseType, hasAccess, hasPremiumAccess]);
+
+  // Fetch total courses generated
+  useEffect(() => {
+    const fetchSyllabiCount = async () => {
+      try {
+        const { count, error } = await supabase
+          .from('syllabi')
+          .select('*', { count: 'exact', head: true });
+        
+        if (error) {
+          console.error('Error fetching syllabi count:', error);
+          return;
+        }
+        
+        // Add a bit of social proof by increasing the displayed number
+        setCoursesGenerated(count ? count + 12548 : 12548);
+      } catch (error) {
+        console.error('Error in fetchSyllabiCount:', error);
+      }
+    };
+    
+    fetchSyllabiCount();
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -82,8 +142,9 @@ export default function SyllabusForm() {
       return;
     }
     
-    // If user doesn't have access, redirect to subscription page
-    if (!hasAccess) {
+    // Check if user can generate the selected course type
+    if (!canGenerateSelectedCourse()) {
+      // If they can't generate the selected course, direct them to upgrade
       window.open(POLAR_SUBSCRIPTION_URL, '_blank');
       return;
     }
@@ -103,337 +164,404 @@ export default function SyllabusForm() {
         body: JSON.stringify({
           topic,
           courseType,
-          userId: user?.id
+          userId: user.id
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to generate syllabus');
+        if (response.status === 403) {
+          setError("You need an active subscription to generate more courses");
+          return;
+        }
+        throw new Error('Failed to generate syllabus');
       }
 
-      setSyllabusUrl(`/syllabus/${data.slug}`);
+      const data = await response.json();
+      setSyllabusUrl(`/syllabus/${data.syllabusId}`);
       setSuccessTopic(topic);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'An error occurred');
+    } catch (error: any) {
+      console.error('Error in handleSubmit:', error);
+      setError(error.message || 'Failed to generate syllabus');
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleTopicSelect = (suggestedTopic: string) => {
-    setTopic(suggestedTopic);
-    topicInputRef.current?.focus();
+  // Update the topic input handler to track typing activity
+  const handleTopicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setTopic(e.target.value);
+    setShowTopics(true);
+    setLastTypedTime(new Date().getTime());
   };
 
-  useEffect(() => {
-    const fetchSyllabiCount = async () => {
-      try {
-        const { count, error } = await supabase
-          .from('syllabi')
-          .select('*', { count: 'exact', head: true });
-
-        if (error) {
-          console.error('Error fetching syllabi count:', error);
-          return;
-        }
-
-        setCoursesGenerated(count || 0);
-      } catch (err) {
-        console.error('Failed to fetch syllabi count:', err);
-      }
-    };
-
-    fetchSyllabiCount();
-  }, []);
+  // Re-add the handleTopicSelect function
+  const handleTopicSelect = (suggestedTopic: string) => {
+    setTopic(suggestedTopic);
+    setShowTopics(false);
+    setLastTypedTime(new Date().getTime());
+    // Focus on input after selection for a better UX
+    if (topicInputRef.current) {
+      topicInputRef.current.focus();
+    }
+  };
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-4">
-      {/* Hero Section */}
+    <div className="max-w-5xl mx-auto px-4 py-8 md:py-12">
+      {/* Hero Section - Simplified and cleaner */}
       <div className="text-center mb-8 md:mb-12">
-        {!user ? (
-          <div 
-            onClick={() => router.push('/login')} 
-            className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full cursor-pointer hover:bg-green-100 transition-colors"
-          >
-            <span className="flex items-center gap-1.5">
-              <span>Sign up for Premium</span>
-              <Zap className="w-3 h-3" />
-            </span>
-          </div>
-        ) : !hasAccess ? (
-          <div 
-            onClick={() => window.open(POLAR_SUBSCRIPTION_URL, '_blank')}
-            className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full cursor-pointer hover:bg-green-100 transition-colors"
-          >
-            <span className="flex items-center gap-1.5">
-              <span>Upgrade to Premium for unlimited generations</span>
-              <Zap className="w-3 h-3" />
-            </span>
-          </div>
-        ) : (
-          <div className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs text-gray-500 whitespace-nowrap bg-green-50 px-2 py-1 rounded-full">
-            <span className="flex items-center gap-1.5">
-              <span>Premium Access Enabled</span>
-              <CheckCircle className="w-3 h-3" />
-            </span>
-          </div>
-        )}
-        
-        <div className="relative inline-block">
-          <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
+        <div className="inline-flex items-center justify-center mb-6">
           <div className="relative p-3 rounded-full">
+            <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
             <Image
               src="/logo_trans.png"
               alt="Logo"
               width={96}
               height={96}
-              className="w-16 h-16 md:w-24 md:h-24"
+              className="w-16 h-16 md:w-20 md:h-20 relative"
               priority
             />
           </div>
         </div>
+        
         <h1 className="text-4xl md:text-5xl text-gray-900 mb-4 leading-tight">
-          Discover Your Next <br className="md:hidden" />
           <span className="animate-gradient bg-gradient-to-r from-blue-600 via-yellow-600 to-pink-500 bg-clip-text text-transparent bg-300%">
-            Learning Journey
+            Learn anything
           </span>
+          <span className="block text-3xl md:text-4xl mt-1 text-gray-800">with Primer AI</span>
         </h1>
-        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto px-4">
-          Generate personalized learning paths for any topic with our AI-powered course creator
+        
+        <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto mb-6">
+          Generate personalized learning paths tailored to your interests and needs
         </p>
+        
+        {/* Social proof banner */}
+        {coursesGenerated && (
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-50 text-indigo-700 text-sm mb-6">
+            <Sparkles className="w-4 h-4" />
+            <span className="font-medium">{coursesGenerated.toLocaleString()} courses created</span>
+          </div>
+        )}
       </div>
 
-      {/* Search Form */}
-      <div className="max-w-3xl mx-auto mb-8 md:mb-12">
-        <form onSubmit={handleSubmit} className="relative">
-          <div className="flex flex-col gap-4">
-            
-            {/* Course Type Selection with Description */}
-            <div className="flex flex-col items-center gap-2">
-            <div className="bg-indigo-50 px-4 py-2 rounded-full text-xs font-medium text-indigo-600 flex items-center gap-1.5 mb-2 shadow-sm">
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>
-                  {coursesGenerated !== null
-                    ? `${coursesGenerated.toLocaleString()} learning journeys created`
-                    : "Loading courses..."}
-                </span>
-              </div>
-              <div className="flex gap-2 justify-center">
-                <button
-                  type="button"
-                  onClick={() => setCourseType('primer')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'primer'
-                    ? 'bg-white text-gray-900 border border-gray-200'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-50 hover:text-gray-900'
-                    }`}
-                >
-                  🚀 Quick Primer
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => setCourseType('fullCourse')}
-                  className={`px-4 py-1.5 rounded-lg text-sm font-medium ${courseType === 'fullCourse'
-                    ? 'bg-black text-white border border-gray-900'
-                    : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
-                    }`}
-                >
-                  🎓 Full Course
-                </button>
-              </div>
-              <p className="text-sm text-gray-600 text-center transition-all duration-300">
-                {courseType === 'primer'
-                  ? "A high-level crash course covering key concepts and fundamentals"
-                  : "A comprehensive curriculum with detailed lessons and exercises"
-                }
-              </p>
+      {/* Course Creator Card - Main focus - MAKING IT MORE COMPACT */}
+      <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 md:p-6 mb-8 relative overflow-hidden">
+        {/* Premium badge for subscribers */}
+        {hasPremium && (
+          <div className="absolute top-0 right-0">
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-0.5 transform rotate-45 translate-x-2 translate-y-3 text-xs font-bold shadow-md">
+              PREMIUM
             </div>
+          </div>
+        )}
 
-            {/* Search Input and Submit */}
-            <div className="relative flex flex-col sm:flex-row gap-2 sm:gap-0">
-              <div className="relative flex-1">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  ref={topicInputRef}
-                  type="text"
-                  value={topic}
-                  onChange={(e) => setTopic(e.target.value)}
-                  placeholder="What would you like to learn?"
-                  className="w-full pl-12 pr-4 py-4 text-base md:text-md rounded-xl sm:rounded-r-none border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all duration-300"
-                  disabled={isLoading}
-                />
-                {topic && !isLoading && (
-                  <button
-                    type="button"
-                    onClick={() => setTopic('')}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+        <h2 className="text-lg md:text-xl font-medium text-gray-900 mb-4">Create your personalized course</h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Topic Input - Centered, focused, clean */}
+          <div className="relative">
+            <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-1.5">What would you like to learn?</label>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                id="topic"
+                ref={topicInputRef}
+                type="text"
+                value={topic}
+                onChange={handleTopicChange}
+                placeholder="Enter any topic or skill..."
+                className="w-full pl-9 pr-3 py-3 text-base rounded-lg border-2 border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 transition-all"
+                disabled={isLoading}
+                onFocus={() => setShowTopics(true)}
+              />
+              {topic && !isLoading && (
+                <button
+                  type="button"
+                  onClick={() => setTopic('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ×
+                </button>
+              )}
+            </div>
+            
+            {/* Topic suggestions panel - Keep the same structure, just adjusting sizes */}
+            {showTopics && (
+              <div className="absolute z-10 mt-1 w-full bg-white rounded-lg shadow-lg border border-gray-100 overflow-hidden">
+                <div className="p-2 border-b border-gray-100 flex items-center justify-between">
+                  <span className="text-xs font-medium text-gray-700">Suggested topics</span>
+                  <button 
+                    type="button" 
+                    onClick={() => setShowTopics(false)} 
+                    className="text-gray-400 hover:text-gray-600"
                   >
                     ×
                   </button>
-                )}
-                
-                {/* Trial remaining courses indicator */}
-                {isOnTrial && (
-                  <div className="absolute -bottom-6 left-2 text-xs text-orange-600 font-medium flex items-center gap-1">
-                    <AlertCircle className="w-3 h-3" />
-                    <span>1 course generation remaining on trial</span>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  {TOPIC_CATEGORIES[activeCategory].map((topicItem) => (
+                    <button
+                      key={topicItem}
+                      type="button"
+                      onClick={() => handleTopicSelect(topicItem)}
+                      className="w-full px-3 py-1.5 text-left hover:bg-indigo-50 text-gray-700 flex items-center gap-2 transition-colors text-sm"
+                    >
+                      <BookType className="w-3.5 h-3.5 text-indigo-500" />
+                      <span>{topicItem}</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="p-1.5 border-t border-gray-100 bg-gray-50">
+                  <div className="flex gap-1.5 overflow-x-auto">
+                    {(Object.keys(TOPIC_CATEGORIES) as TopicCategoryKey[]).map((category) => (
+                      <button
+                        key={category}
+                        type="button"
+                        onClick={() => setActiveCategory(category)}
+                        className={`flex-shrink-0 px-2.5 py-0.5 rounded-full text-xs whitespace-nowrap ${
+                          activeCategory === category
+                            ? 'bg-indigo-600 text-white'
+                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                        }`}
+                      >
+                        {category}
+                      </button>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
+            )}
+          </div>
+          
+          {/* Course Type Selection - More compact version */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1.5">Choose your learning experience</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <button
-                type="submit"
-                disabled={!topic || isLoading}
-                className="w-full sm:w-auto px-6 py-4 bg-indigo-600 text-white rounded-xl sm:rounded-l-none hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 flex items-center justify-center gap-2 min-w-[140px]"
+                type="button"
+                onClick={() => setCourseType('primer')}
+                className={`p-3 rounded-lg text-left transition-all border ${
+                  courseType === 'primer'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Generating...</span>
-                  </>
-                ) : !user ? (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    <span>Sign In</span>
-                  </>
-                ) : !hasAccess ? (
-                  <>
-                    <Zap className="w-5 h-5" />
-                    <span>Upgrade</span>
-                  </>
-                ) : (
-                  <>
-                    <BookOpen className="w-5 h-5" />
-                    <span>Generate</span>
-                  </>
-                )}
+                <div className={`flex items-center gap-2 mb-1 ${
+                  courseType === 'primer' ? 'text-indigo-700' : 'text-gray-700'
+                }`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    courseType === 'primer' ? 'bg-indigo-100' : 'bg-gray-100'
+                  }`}>
+                    🚀
+                  </div>
+                  <span className="font-medium text-sm">Quick Primer</span>
+                </div>
+                <p className="text-xs text-gray-600 pl-8">A high-level crash course covering key concepts</p>
+              </button>
+              
+              <button
+                type="button"
+                onClick={() => setCourseType('fullCourse')}
+                className={`p-3 rounded-lg text-left transition-all border ${
+                  courseType === 'fullCourse'
+                    ? 'border-indigo-500 bg-indigo-50'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className={`flex items-center gap-2 mb-1 ${
+                  courseType === 'fullCourse' ? 'text-indigo-700' : 'text-gray-700'
+                }`}>
+                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
+                    courseType === 'fullCourse' ? 'bg-indigo-100' : 'bg-gray-100'
+                  }`}>
+                    🎓
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-medium text-sm">Full Course</span>
+                    {/* Always show Premium badge for Full Course */}
+                    <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">Premium</span>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-600 pl-8">A comprehensive curriculum with detailed lessons</p>
               </button>
             </div>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <div className="mt-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-start gap-2">
-              <div className="w-5 h-5 rounded-full border-2 border-red-600 flex items-center justify-center flex-shrink-0 mt-0.5">!</div>
-              <p>{error}</p>
+          
+          {/* Premium Access Banner - More compact */}
+          {user && !hasPremium && (
+            <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg p-3 border border-indigo-100">
+              <div className="flex items-start gap-2.5">
+                <div className="bg-indigo-100 p-1.5 rounded-full text-indigo-600 mt-0.5">
+                  <Sparkles className="w-4 h-4" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-medium text-indigo-800 text-sm mb-0.5">
+                    {isOnTrial ? 'You\'re on a free trial' : 'Upgrade to Premium'}
+                  </h3>
+                  <p className="text-xs text-indigo-700 mb-2">
+                    {isOnTrial 
+                      ? 'You can create one Primer course with your trial. Full Courses require premium.' 
+                      : 'Get unlimited course generation and premium features'}
+                  </p>
+                  {!hasAccess && (
+                    <a
+                      href={POLAR_SUBSCRIPTION_URL}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors text-xs"
+                    >
+                      <Zap className="w-3.5 h-3.5" />
+                      <span>Upgrade now</span>
+                    </a>
+                  )}
+                </div>
+              </div>
             </div>
           )}
-
-          {/* Success Message */}
-          {syllabusUrl && (
-            <div className="mt-4 p-4 bg-green-50 border border-green-100 text-green-600 rounded-lg text-sm flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-                <p className="font-medium">Your {courseType === 'primer' ? 'primer' : 'course'} on {successTopic} is ready!</p>
-              </div>
-              <a
-                href={syllabusUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-full sm:w-auto px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center flex items-center justify-center gap-2"
-              >
-                <BookOpen className="w-4 h-4" />
-                <span>View Course</span>
-              </a>
-            </div>
+          
+          {/* Generate Button - Smaller but still prominent */}
+          <div>
+            <button
+              type="submit"
+              disabled={!topic || isLoading}
+              className="w-full py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-base"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Creating your course...</span>
+                </>
+              ) : !user ? (
+                <>
+                  <Zap className="w-4 h-4" />
+                  <span>Sign In to Create</span>
+                </>
+              ) : !canGenerateSelectedCourse() ? (
+                <>
+                  <Sparkles className="w-4 h-4" />
+                  <span>Upgrade to Premium</span>
+                </>
+              ) : (
+                <>
+                  <BookOpen className="w-4 h-4" />
+                  <span>Create My Course</span>
+                </>
+              )}
+            </button>
+          </div>
+          
+          {/* Info text - Smaller */}
+          {user && hasAccess && (
+            <p className="text-center text-xs text-gray-500">
+              Your personalized course will be ready in seconds
+            </p>
           )}
         </form>
-      </div>
-
-      {/* Topic Categories */}
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 md:p-6 mb-8 md:mb-12">
-        <div className="flex items-center gap-2 mb-4 md:mb-6">
-          <TrendingUp className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg md:text-xl text-gray-900">Popular Topics</h2>
-        </div>
-
-        {/* Category Tabs - Horizontal Scrollable on Mobile */}
-        <div className="-mx-4 px-4 md:mx-0 md:px-0">
-          <div className="flex gap-2 overflow-x-auto pb-4 md:pb-6 no-scrollbar">
-            {(Object.keys(TOPIC_CATEGORIES) as TopicCategoryKey[]).map((category) => (
-              <button
-                key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`flex-shrink-0 px-3.5 py-1.5 md:px-4 md:py-2 rounded-full text-sm whitespace-nowrap transition-all duration-300 ${activeCategory === category
-                  ? 'bg-indigo-600 text-white shadow-sm'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-              >
-                {category}
-              </button>
-            ))}
+        
+        {/* Error & Success Messages - Keep these the same size for readability */}
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 border border-red-100 text-red-600 rounded-lg text-sm flex items-start gap-2">
+            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+            <p>{error}</p>
           </div>
-        </div>
+        )}
 
-        {/* Topic Grid - Responsive Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
-          {TOPIC_CATEGORIES[activeCategory].map((topicItem) => (
-            <button
-              key={topicItem}
-              onClick={() => handleTopicSelect(topicItem)}
-              className="group p-3 md:p-4 text-left rounded-lg md:rounded-xl border border-gray-200 hover:border-indigo-500 hover:bg-indigo-50/50 transition-all duration-300"
+        {syllabusUrl && (
+          <div className="mt-4 p-4 bg-green-50 border border-green-100 rounded-lg">
+            <div className="flex items-center gap-3 mb-3">
+              <CheckCircle className="w-5 h-5 text-green-600" />
+              <h3 className="font-medium text-green-800">
+                Your {courseType === 'primer' ? 'primer' : 'course'} on {successTopic} is ready!
+              </h3>
+            </div>
+            <a
+              href={syllabusUrl}
+              className="block w-full py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-center font-medium"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 md:w-8 md:h-8 rounded-md md:rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-colors">
-                  <BookType className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="text-xs font-inter text-gray-900 truncate group-hover:text-indigo-600 transition-colors">
-                    {topicItem}
-                  </h3>
-                </div>
-                <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
-              </div>
-            </button>
-          ))}
+              View Your Course
+            </a>
+          </div>
+        )}
+      </div>
+
+      {/* Popular Topics - Clean grid layout */}
+      <div className="mb-16">
+        <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
+          <TrendingUp className="w-5 h-5 text-indigo-600" />
+          <span>Popular Topics to Explore</span>
+        </h2>
+        
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
+          {Object.entries(TOPIC_CATEGORIES).flatMap(([category, topics]) => 
+            topics.slice(0, 1).map(topic => (
+              <button
+                key={topic}
+                onClick={() => handleTopicSelect(topic)}
+                className="group p-4 text-left rounded-xl border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200"
+              >
+                <p className="text-xs text-indigo-600 mb-1 uppercase tracking-wider font-medium">{category}</p>
+                <h3 className="text-gray-900 group-hover:text-indigo-700 transition-colors font-medium">{topic}</h3>
+              </button>
+            ))
+          )}
         </div>
       </div>
 
-      {/* Features Grid - Responsive Layout */}
-      <div>
-        <div className="mb-6 flex items-center gap-2">
+      {/* Featured Courses - Enhanced card design */}
+      <div className="mb-8">
+        <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-indigo-600" />
-          <h2 className="text-lg md:text-xl text-gray-900">Featured Courses</h2>
-        </div>
+          <span>Featured Courses</span>
+        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
           {[
             {
               title: "🏠 DIY A-Frame Constructions",
-              description: "Learn how to design and build your own A-frame structure, from planning and materials selection to construction techniques and finishing touches.",
-              href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b"
+              description: "Learn how to design and build your own A-frame structure, from planning to final touches.",
+              href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b",
+              category: "Home Building"
             },
             {
               title: "💰 Wealth Management - Primer",
-              description: "A focused introduction to get you started quickly with wealth management",
-              href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c"
+              description: "A focused introduction to get you started quickly with wealth management.",
+              href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c",
+              category: "Finance"
             },
             {
-              title: "🌱 Starting a Microgreens Garden",
-              description: "A comprehensive course covering everything from fundamentals to advanced applications of growing microgreens",
-              href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29"
+              title: "🌱 Microgreens Garden",
+              description: "Everything from fundamentals to advanced techniques for growing microgreens.",
+              href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29",
+              category: "Gardening"
             }
           ].map((feature) => (
             <a
               key={feature.title}
               href={feature.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group p-6 bg-white rounded-xl shadow-sm border border-gray-100 hover:shadow-md hover:border-indigo-100 transition-all duration-300 block relative"
+              className="group block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300"
             >
-              <div className="absolute top-4 right-4">
-                <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-indigo-600 transition-colors" />
+              <div className="h-32 bg-gradient-to-r from-indigo-50 to-purple-50 relative">
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors"></div>
+                <div className="absolute bottom-3 left-4">
+                  <span className="px-3 py-1 bg-white/90 rounded-full text-xs font-medium text-indigo-700">
+                    {feature.category}
+                  </span>
+                </div>
               </div>
-              <h3 className="text-xl text-gray-900 mb-2 pr-8">{feature.title}</h3>
-              <p className="text-gray-600 text-sm">{feature.description}</p>
+              <div className="p-5">
+                <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-700 transition-colors mb-2">{feature.title}</h3>
+                <p className="text-gray-600 text-sm">{feature.description}</p>
+              </div>
             </a>
           ))}
         </div>
       </div>
 
+      {/* Premium Upsell Dialog */}
+      <UpsellDialog 
+        isOpen={showUpsell} 
+        onClose={() => setShowUpsell(false)} 
+        storeUrl={POLAR_SUBSCRIPTION_URL} 
+      />
     </div>
   );
 }

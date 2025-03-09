@@ -1,30 +1,31 @@
 // src/types/index.ts
 
 // Syllabus types
-export interface SyllabusLesson {
+export type SyllabusLesson = {
   id: string;
   title: string;
-  description: string;
-}
+  description: string | null;
+  isLocked?: boolean;
+};
 
-export interface Chapter {
-  emoji: string;
+export type Chapter = {
   title: string;
-  description: string;
-  estimatedDuration: string;
+  description: string | null;
+  emoji: string | null;
+  estimated_duration: string | null;
   lessons: SyllabusLesson[];
-}
+};
 
-export interface Syllabus {
+export type Syllabus = {
   id: string;
   title: string;
   description: string;
-  difficultyLevel: string;
-  estimatedDuration: string;
-  prerequisites: string[];
+  difficulty_level: string;
+  estimated_duration: string;
+  prerequisites: string[] | null;
+  image_url: string | null;
   chapters: Chapter[];
-  image_url?: string;  // Added this field
-}
+};
 
 // Detailed lesson types
 export interface LessonExample {

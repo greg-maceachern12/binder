@@ -1,8 +1,19 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import Auth from '../components/Auth';
 
 export default function LoginPage() {
+  const [hasRedirect, setHasRedirect] = useState(false);
+  
+  // Check if there's a redirect path stored
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const storedRedirect = sessionStorage.getItem('redirectAfterLogin');
+      setHasRedirect(Boolean(storedRedirect));
+    }
+  }, []);
+  
   return (
     <main className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-purple-100 flex flex-col items-center justify-center p-4">
       {/* Decorative elements */}
@@ -14,7 +25,9 @@ export default function LoginPage() {
           <h1 className="text-4xl md:text-5xl text-indigo-700 mb-4 leading-tight">
             PrimerAI
           </h1>
-          <p className="text-gray-600 mt-2">Learn anything</p>
+          <p className="text-gray-600 mt-2">
+            {hasRedirect ? 'Sign in to continue' : 'Learn anything'}
+          </p>
         </div>
         
         <Auth />

@@ -2,18 +2,11 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase/client';
-import { User, AuthError } from '@supabase/supabase-js';
-
-type BasicUser = {
-  id: string;
-  email: string | null;
-  subscription_id: string | null;
-  trial_active: boolean;
-};
+import { User } from '@supabase/supabase-js';
 
 type AuthContextType = {
-  user: BasicUser | null;
-  loading: boolean;
+  user: User | null;
+  isLoading: boolean;
   signIn: (email: string) => Promise<{ success: boolean; message: string }>;
   signOut: () => Promise<void>;
 };
@@ -21,113 +14,27 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<BasicUser | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Set up auth state listener
   useEffect(() => {
     // Get initial session
-    const getInitialSession = async () => {
-      setLoading(true);
-      
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user) {
-          // Get user data from the users table
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('subscription_id, trial_active')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching user data:', error);
-          }
-          
-          // Create the user object with subscription info if available
-          setUser({
-            id: session.user.id,
-            email: session.user.email || null,
-            subscription_id: userData?.subscription_id || null,
-            trial_active: userData?.trial_active || false
-          });
-          
-          // Ensure user exists in the users table (handles signup case)
-          await ensureUserInDatabase(session.user);
-        }
-      } catch (error) {
-        console.error('Error getting session:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getInitialSession();
-    
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        if (session?.user) {
-          // Get user data from the users table
-          const { data: userData, error } = await supabase
-            .from('users')
-            .select('subscription_id, trial_active')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (error && error.code !== 'PGRST116') {
-            console.error('Error fetching user data:', error);
-          }
-          
-          // Create the user object with subscription info if available
-          setUser({
-            id: session.user.id,
-            email: session.user.email || null,
-            subscription_id: userData?.subscription_id || null,
-            trial_active: userData?.trial_active || false
-          });
-          
-          // Ensure user exists in the users table (handles signup case)
-          await ensureUserInDatabase(session.user);
-        } else {
-          setUser(null);
-        }
-        
-        setLoading(false);
-      }
-    );
-    
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user ?? null);
+      setIsLoading(false);
+    });
+
     return () => {
       subscription.unsubscribe();
     };
   }, []);
-  
-  // Ensure user exists in database
-  const ensureUserInDatabase = async (user: User) => {
-    try {
-      // Check if user exists in the users table
-      const { error: fetchError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('id', user.id)
-        .single();
-      
-      // Only create user if they don't exist
-      if (fetchError && fetchError.code === 'PGRST116') { // No rows returned
-        // Create new user record
-        await supabase.from('users').insert({
-          id: user.id,
-          email: user.email,
-          trial_active: true
-        });
-      }
-    } catch (error) {
-      console.error('Error ensuring user in database:', error);
-    }
-  };
-  
-  // Sign in with magic link
+
   const signIn = async (email: string) => {
     try {
       const { error } = await supabase.auth.signInWithOtp({
@@ -136,26 +43,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/dashboard`
         }
       });
-      
-      if (error) {
-        throw error;
-      }
-      
+
+      if (error) throw error;
+
       return {
         success: true,
         message: 'Check your email for the login link'
       };
-    } catch (error: unknown) {
+    } catch (error: any) {
       console.error('Sign in error:', error);
-      const message = error instanceof AuthError ? error.message : 'Failed to send the login link';
       return {
         success: false,
-        message
+        message: error?.message || 'Failed to send the login link'
       };
     }
   };
-  
-  // Sign out
+
   const signOut = async () => {
     try {
       await supabase.auth.signOut();
@@ -167,7 +70,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider value={{
       user,
-      loading,
+      isLoading,
       signIn,
       signOut
     }}>
