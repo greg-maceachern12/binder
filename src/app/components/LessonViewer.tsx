@@ -35,8 +35,8 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center">
-      <div className="w-full h-full md:h-[96vh] max-w-6xl bg-white md:rounded-2xl shadow-2xl flex">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 pt-16 md:pt-20">
+      <div className="w-full h-[calc(100vh-64px)] md:h-[calc(96vh-80px)] max-w-6xl bg-white md:rounded-2xl shadow-2xl flex overflow-hidden">
         {/* Mobile Sidebar Overlay */}
         {isSidebarOpen && (
           <div
@@ -54,6 +54,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <button
               onClick={() => setIsSidebarOpen(false)}
               className="md:hidden p-1 text-gray-400 hover:text-gray-600 rounded-lg"
+              aria-label="Close sidebar"
             >
               <X className="w-4 h-4" />
             </button>
@@ -82,9 +83,10 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <div className="absolute right-4 md:right-6 top-4">
               <button
                 onClick={onClose}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full transition-colors duration-200"
+                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg"
+                aria-label="Close lesson viewer"
               >
-                <X className="w-6 h-6" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
@@ -92,9 +94,10 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <div className="px-4 md:px-6 py-4 flex items-center gap-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="md:hidden p-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                className="md:hidden p-2 text-gray-700 hover:text-indigo-600 hover:bg-gray-100 rounded-lg"
+                aria-label="Open sidebar"
               >
-                <Menu className="w-6 h-6" />
+                <Menu className="w-5 h-5" />
               </button>
               <AudioPlayer
                 lessonTitle={lesson.title}
@@ -325,46 +328,46 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               </div>
             </div>
 
-        {/* Next Steps */}
-        <div className="mb-8 md:mb-12">
-          <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Next Steps</h2>
-          <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
-            <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps.summary}</p>
+            {/* Next Steps */}
+            <div className="mb-8 md:mb-12">
+              <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Next Steps</h2>
+              <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps.summary}</p>
 
-            {lesson.nextSteps.furtherLearning.length > 0 && (
-              <div className="mb-4 md:mb-6">
-                <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Further Learning</h3>
-                <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
-                  {lesson.nextSteps.furtherLearning.map((item, i) => (
-                    <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
-                  ))}
-                </ul>
+                {lesson.nextSteps.furtherLearning.length > 0 && (
+                  <div className="mb-4 md:mb-6">
+                    <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Further Learning</h3>
+                    <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
+                      {lesson.nextSteps.furtherLearning.map((item, i) => (
+                        <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {lesson.nextSteps.applications.length > 0 && (
+                  <div>
+                    <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Practical Applications</h3>
+                    <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
+                      {lesson.nextSteps.applications.map((item, i) => (
+                        <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
               </div>
-            )}
+            </div>
 
-            {lesson.nextSteps.applications.length > 0 && (
-              <div>
-                <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Practical Applications</h3>
-                <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
-                  {lesson.nextSteps.applications.map((item, i) => (
-                    <li key={i} className="text-sm md:text-base text-gray-600">{item}</li>
-                  ))}
-                </ul>
+            {/* Notes Section - Only visible in print */}
+            <div className="hidden print:block print:page-break-before-always">
+              <h2 className="text-xl mb-4">Notes</h2>
+              <div className="border-t border-dashed pt-4">
+                <div className="h-96"></div>
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Notes Section - Only visible in print */}
-        <div className="hidden print:block print:page-break-before-always">
-          <h2 className="text-xl mb-4">Notes</h2>
-          <div className="border-t border-dashed pt-4">
-            <div className="h-96"></div>
+            </div>
           </div>
         </div>
       </div>
     </div>
-      </div >
-    </div >
   );
 }

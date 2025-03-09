@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Sparkles, Zap, Bot, Clock, Check } from 'lucide-react';
+import { Award, X, Sparkles, Zap, Bot, Clock } from 'lucide-react';
 
 interface UpsellDialogProps {
   isOpen: boolean;
@@ -63,15 +63,15 @@ export default function UpsellDialog({ isOpen, onClose, storeUrl }: UpsellDialog
               {/* Header */}
               <div className="flex flex-col items-center mb-8">
                 <motion.div 
+                  className="w-16 h-16 rounded-full bg-emerald-100 flex items-center justify-center mx-auto mb-4"
                   initial={{ scale: 0.8, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2, duration: 0.5 }}
-                  className="bg-gradient-to-r from-pink-200 to-purple-200 rounded-full p-3.5 mb-5"
+                  transition={{ delay: 0.2, type: "spring", stiffness: 300 }}
                 >
-                  <Sparkles className="h-7 w-7 text-indigo-600" />
+                  <Award className="w-9 h-9 text-emerald-600" />
                 </motion.div>
-                <h3 className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent pb-1">
-                  Upgrade to Premium
+                <h3 className="text-2xl md:text-3xl font-bold text-center bg-gradient-to-r from-emerald-600 to-emerald-500 bg-clip-text text-transparent pb-1">
+                  Upgrade to Pro
                 </h3>
                 <p className="text-gray-600 text-center mt-2 max-w-xs mx-auto">
                   Take your learning experience to the next level
@@ -126,15 +126,29 @@ export default function UpsellDialog({ isOpen, onClose, storeUrl }: UpsellDialog
                   href={storeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.98 }}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-lg font-medium"
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-center font-medium shadow-md transition-colors"
+                  onClick={() => {
+                    // Track click event
+                    if (typeof window !== 'undefined') {
+                      // Properly type window with optional gtag property
+                      interface WindowWithGtag extends Window {
+                        gtag?: (command: string, action: string, params: Record<string, string>) => void;
+                      }
+                      const win = window as WindowWithGtag;
+                      
+                      if (win.gtag) {
+                        win.gtag('event', 'click_premium_upgrade', {
+                          event_category: 'engagement',
+                          event_label: 'premium_upsell'
+                        });
+                      }
+                    }
+                  }}
                 >
-                  <Sparkles className="w-5 h-5" />
-                  <span>Upgrade Now</span>
+                  Get Premium Access
                 </motion.a>
                 <p className="text-xs text-center text-gray-500 mt-3">
-                  Unlock premium features starting at just $5.99/month
+                  Unlock Pro features starting at just $5.99/month
                 </p>
               </motion.div>
             </motion.div>

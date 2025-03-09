@@ -39,8 +39,8 @@ export const supabase = createClient(
       },
       // Set a consistent storage key
       storageKey: 'primer-auth-session',
-      // Debug logging in development
-      debug: process.env.NODE_ENV === 'development',
+      // Disable debug logging
+      debug: false,
     },
     // Improve reliability of data queries
     global: {

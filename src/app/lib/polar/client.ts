@@ -28,7 +28,7 @@ export async function verifySubscription(subscriptionId: string): Promise<boolea
     const subscription = await polar.subscriptions.get({
       id:subscriptionId,
     });
-    
+    console.log('subscription');
     console.log(subscription);
     // Check if subscription status is active
     return subscription && subscription.status === "active";

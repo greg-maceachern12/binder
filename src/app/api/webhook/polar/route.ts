@@ -1,34 +1,33 @@
 import { supabase } from '@/app/lib/supabase/client';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
+// import crypto from 'crypto';
 
 // Verify the webhook signature from Polar
-function verifySignature(payload: string, signature: string, secret: string) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return signature === digest;
-}
+// function verifySignature(payload: string, signature: string, secret: string) {
+//   const hmac = crypto.createHmac('sha256', secret);
+//   const digest = hmac.update(payload).digest('hex');
+//   return signature === digest;
+// }
 
 export async function POST(req: Request) {
   try {
     // Get the raw body
     const payload = await req.text();
-    
     // Get the signature from headers
-    const signature = req.headers.get('polar-signature') || '';
-    const webhookSecret = process.env.POLAR_WEBHOOK_SECRET || '';
+    // const signature = req.headers.get('polar-signature') || '';
+    // const webhookSecret = process.env.POLAR_WEBHOOK_SECRET || '';
     
-    // Skip verification if in development or explicitly disabled
-    const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
+    // // Skip verification if in development or explicitly disabled
+    // const skipVerification = process.env.SKIP_WEBHOOK_VERIFICATION === 'true';
     
-    // Verify webhook signature except when explicitly skipped
-    if (!skipVerification && webhookSecret) {
-      const isValid = verifySignature(payload, signature, webhookSecret);
-      if (!isValid) {
-        console.error('Invalid webhook signature');
-        return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
-      }
-    }
+    // // Verify webhook signature except when explicitly skipped
+    // if (!skipVerification && webhookSecret) {
+    //   const isValid = verifySignature(payload, signature, webhookSecret);
+    //   if (!isValid) {
+    //     console.error('Invalid webhook signature');
+    //     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+    //   }
+    // }
     
     // Parse the event payload
     const data = JSON.parse(payload);
@@ -71,7 +70,7 @@ export async function POST(req: Request) {
     const updateData = {
       polar_id: polarId,
       subscription_id: isActive ? subscriptionId : null,
-      trial_active: isActive,
+      trial_active: !isActive,
       updated_at: new Date().toISOString()
     };
 

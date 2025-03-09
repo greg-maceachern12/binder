@@ -9,6 +9,7 @@ export type SyllabusLesson = {
 };
 
 export type Chapter = {
+  id: string;
   title: string;
   description: string | null;
   emoji: string | null;
@@ -24,6 +25,7 @@ export type Syllabus = {
   estimated_duration: string;
   prerequisites: string[] | null;
   image_url: string | null;
+  user_id?: string;
   chapters: Chapter[];
 };
 

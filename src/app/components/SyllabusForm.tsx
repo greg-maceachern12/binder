@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, BookType, ArrowRight, ExternalLink, Zap, CheckCircle, AlertCircle, Sparkles, Lock } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, BookType, Zap, CheckCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
 import { supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -53,7 +53,8 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 };
 
 export default function SyllabusForm() {
-  const { user } = useAuth();
+  // Use the enhanced auth context with subscription status
+  const { user, hasAccess, hasPremium, subscriptionStatus } = useAuth();
   const [topic, setTopic] = useState('');
   const [courseType, setCourseType] = useState<CourseType>('primer');
   const [successTopic, setSuccessTopic] = useState<string>('');
@@ -68,19 +69,13 @@ export default function SyllabusForm() {
   
   // Upsell dialog state
   const [showUpsell, setShowUpsell] = useState(false);
-  const [lastTypedTime, setLastTypedTime] = useState<number>(0);
+  // const [lastTypedTime, setLastTypedTime] = useState<number>(0);
 
   // Polar subscription URL
   const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
 
-  // Check if user has access (either subscription or trial)
-  const hasAccess = user ? (!!user.subscription_id || !!user.trial_active) : false;
-  
-  // Check if user is on trial but doesn't have subscription
-  const isOnTrial = user?.trial_active && !user?.subscription_id;
-
-  // Check if user has premium subscription
-  const hasPremium = user?.subscription_id ? true : false;
+  // Check if user is on trial
+  const isOnTrial = subscriptionStatus === 'trial';
 
   // Show upsell dialog after 4 seconds for eligible users (logged in but no subscription or trial)
   useEffect(() => {
@@ -95,20 +90,6 @@ export default function SyllabusForm() {
       return () => clearTimeout(timer);
     }
   }, [user, hasAccess]);
-
-  // Check if user has access to premium features (subscription only)
-  const hasPremiumAccess = user?.subscription_id ? true : false;
-  
-  // Check if user has access to generate the selected course type
-  const canGenerateSelectedCourse = useCallback(() => {
-    // Free trial users can only generate primer courses
-    if (courseType === 'primer') {
-      return hasAccess; // Either premium or trial can generate primers
-    } else {
-      // Full course generation requires premium subscription
-      return hasPremiumAccess; // Only premium users can generate full courses
-    }
-  }, [courseType, hasAccess, hasPremiumAccess]);
 
   // Fetch total courses generated
   useEffect(() => {
@@ -143,7 +124,7 @@ export default function SyllabusForm() {
     }
     
     // Check if user can generate the selected course type
-    if (!canGenerateSelectedCourse()) {
+    if (!hasAccess) {
       // If they can't generate the selected course, direct them to upgrade
       window.open(POLAR_SUBSCRIPTION_URL, '_blank');
       return;
@@ -179,9 +160,9 @@ export default function SyllabusForm() {
       const data = await response.json();
       setSyllabusUrl(`/syllabus/${data.syllabusId}`);
       setSuccessTopic(topic);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error in handleSubmit:', error);
-      setError(error.message || 'Failed to generate syllabus');
+      setError(error instanceof Error ? error.message : 'Failed to generate syllabus');
     } finally {
       setIsLoading(false);
     }
@@ -191,14 +172,14 @@ export default function SyllabusForm() {
   const handleTopicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setTopic(e.target.value);
     setShowTopics(true);
-    setLastTypedTime(new Date().getTime());
+    // setLastTypedTime(new Date().getTime());
   };
 
   // Re-add the handleTopicSelect function
   const handleTopicSelect = (suggestedTopic: string) => {
     setTopic(suggestedTopic);
     setShowTopics(false);
-    setLastTypedTime(new Date().getTime());
+    // setLastTypedTime(new Date().getTime());
     // Focus on input after selection for a better UX
     if (topicInputRef.current) {
       topicInputRef.current.focus();
@@ -247,9 +228,10 @@ export default function SyllabusForm() {
       <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-5 md:p-6 mb-8 relative overflow-hidden">
         {/* Premium badge for subscribers */}
         {hasPremium && (
-          <div className="absolute top-0 right-0">
-            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-5 py-0.5 transform rotate-45 translate-x-2 translate-y-3 text-xs font-bold shadow-md">
-              PREMIUM
+          <div className="absolute top-4 right-4 z-10">
+            <div className="flex items-center gap-1.5 py-1 px-2.5 bg-emerald-100 text-emerald-800 rounded-full shadow-sm border border-emerald-200">
+              <Award className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs font-semibold tracking-wide">PRO</span>
             </div>
           </div>
         )}
@@ -377,8 +359,11 @@ export default function SyllabusForm() {
                   </div>
                   <div className="flex items-center gap-1.5">
                     <span className="font-medium text-sm">Full Course</span>
-                    {/* Always show Premium badge for Full Course */}
-                    <span className="px-1.5 py-0.5 bg-indigo-100 text-indigo-700 text-xs rounded-full">Premium</span>
+                    {/* Updated Premium badge for Full Course */}
+                    <span className="flex items-center gap-0.5 px-1.5 py-0.5 bg-emerald-100 text-emerald-800 text-xs rounded-full border border-emerald-200">
+                      <Award className="w-3 h-3 text-emerald-600" />
+                      <span className="font-semibold tracking-wide">PRO</span>
+                    </span>
                   </div>
                 </div>
                 <p className="text-xs text-gray-600 pl-8">A comprehensive curriculum with detailed lessons</p>
@@ -395,12 +380,12 @@ export default function SyllabusForm() {
                 </div>
                 <div className="flex-1">
                   <h3 className="font-medium text-indigo-800 text-sm mb-0.5">
-                    {isOnTrial ? 'You\'re on a free trial' : 'Upgrade to Premium'}
+                    {isOnTrial ? 'You\'re on a free trial' : 'Upgrade to Pro'}
                   </h3>
                   <p className="text-xs text-indigo-700 mb-2">
                     {isOnTrial 
-                      ? 'You can create one Primer course with your trial. Full Courses require premium.' 
-                      : 'Get unlimited course generation and premium features'}
+                      ? 'You can create one Primer course with your trial. Full Courses require pro.' 
+                      : 'Get unlimited course generation and pro features'}
                   </p>
                   {!hasAccess && (
                     <a
@@ -435,10 +420,10 @@ export default function SyllabusForm() {
                   <Zap className="w-4 h-4" />
                   <span>Sign In to Create</span>
                 </>
-              ) : !canGenerateSelectedCourse() ? (
+              ) : !hasAccess ? (
                 <>
                   <Sparkles className="w-4 h-4" />
-                  <span>Upgrade to Premium</span>
+                  <span>Upgrade to Pro</span>
                 </>
               ) : (
                 <>
@@ -507,55 +492,65 @@ export default function SyllabusForm() {
       </div>
 
       {/* Featured Courses - Enhanced card design */}
-      <div className="mb-8">
-        <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-indigo-600" />
-          <span>Featured Courses</span>
-        </h2>
+      {/* Featured Courses - Enhanced card design with actual images */}
+<div className="mb-8">
+  <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
+    <BookOpen className="w-5 h-5 text-indigo-600" />
+    <span>Featured Courses</span>
+  </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
-          {[
-            {
-              title: "🏠 DIY A-Frame Constructions",
-              description: "Learn how to design and build your own A-frame structure, from planning to final touches.",
-              href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b",
-              category: "Home Building"
-            },
-            {
-              title: "💰 Wealth Management - Primer",
-              description: "A focused introduction to get you started quickly with wealth management.",
-              href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c",
-              category: "Finance"
-            },
-            {
-              title: "🌱 Microgreens Garden",
-              description: "Everything from fundamentals to advanced techniques for growing microgreens.",
-              href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29",
-              category: "Gardening"
-            }
-          ].map((feature) => (
-            <a
-              key={feature.title}
-              href={feature.href}
-              className="group block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300"
-            >
-              <div className="h-32 bg-gradient-to-r from-indigo-50 to-purple-50 relative">
-                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors"></div>
-                <div className="absolute bottom-3 left-4">
-                  <span className="px-3 py-1 bg-white/90 rounded-full text-xs font-medium text-indigo-700">
-                    {feature.category}
-                  </span>
-                </div>
-              </div>
-              <div className="p-5">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-700 transition-colors mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
-              </div>
-            </a>
-          ))}
+  <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+    {[
+      {
+        title: "🏠 DIY A-Frame Constructions",
+        description: "Learn how to design and build your own A-frame structure, from planning to final touches.",
+        href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b",
+        img: "https://images.unsplash.com/photo-1573812331441-d99117496acb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
+        category: "Home Building"
+      },
+      {
+        title: "💰 Wealth Management - Primer",
+        description: "A focused introduction to get you started quickly with wealth management.",
+        href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c",
+        img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
+        category: "Finance"
+      },
+      {
+        title: "🌱 Microgreens Garden",
+        description: "Everything from fundamentals to advanced techniques for growing microgreens.",
+        href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29",
+        img: "https://images.unsplash.com/photo-1702351253307-e6f8a3f308ff?q=80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
+        category: "Gardening"
+      }
+    ].map((feature) => (
+      <a
+        key={feature.title}
+        href={feature.href}
+        className="group block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300"
+      >
+        <div className="h-32 relative overflow-hidden">
+          <Image 
+            src={feature.img} 
+            alt={feature.title}
+            width={100}
+            height={100}
+            className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          />
+          <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
+          <div className="absolute bottom-3 left-4">
+            <span className="px-3 py-1 bg-white/90 rounded-full text-xs font-medium text-indigo-700">
+              {feature.category}
+            </span>
+          </div>
         </div>
-      </div>
-
+        <div className="p-5">
+          <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-700 transition-colors mb-2">{feature.title}</h3>
+          <p className="text-gray-600 text-sm">{feature.description}</p>
+        </div>
+      </a>
+    ))}
+  </div>
+</div>
       {/* Premium Upsell Dialog */}
       <UpsellDialog 
         isOpen={showUpsell} 

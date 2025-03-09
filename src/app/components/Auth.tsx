@@ -55,7 +55,7 @@ export default function Auth() {
         text: result.message,
         type: result.success ? 'success' : 'error'
       });
-    } catch (error) {
+    } catch (error: unknown) {
       setMessage({
         text: 'An unexpected error occurred. Please try again.',
         type: 'error'
@@ -80,7 +80,7 @@ export default function Auth() {
         
         {redirectPath && (
           <div className="mb-4 bg-blue-50 border border-blue-100 rounded-lg p-3 text-sm text-blue-700">
-            You'll be redirected back after signing in
+            You&apos;ll be redirected back after signing in
           </div>
         )}
         

@@ -1,30 +1,25 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { supabase } from '@/app/lib/supabase/client';
-import { Syllabus, Chapter, SyllabusLesson, DetailedLesson } from '@/app/types';
+import { Syllabus, DetailedLesson, Chapter, SyllabusLesson } from '@/app/types';
 import { DbSyllabus, DbChapter, DbLesson } from '@/app/types/database';
 import SyllabusDisplay from '@/app/components/SyllabusDisplay';
-import { useAuth } from '@/app/context/AuthContext';
-import { Loader2, LogIn } from 'lucide-react';
-import Link from 'next/link';
 
 export default function SyllabusPage() {
     const params = useParams();
     const router = useRouter();
-    const { user } = useAuth();
     const [syllabus, setSyllabus] = useState<Syllabus | null>(null);
-    const [isLoading, setIsLoading] = useState(true);
-    const [notFound, setNotFound] = useState(false);
+    const [generatingLessons, setGeneratingLessons] = useState(false);
+    const [generatedLessons, setGeneratedLessons] = useState<{ [key: string]: DetailedLesson }>({});
+    const [currentGeneratingLesson, setCurrentGeneratingLesson] = useState<string>('');
 
-    // Public fetch syllabus function - works without authentication
-    const fetchSyllabus = useCallback(async () => {
-        setIsLoading(true);
-        try {
+    useEffect(() => {
+        const fetchSyllabus = async () => {
             const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
             if (!params.slug || !uuidRegex.test(params.slug as string)) {
-                setNotFound(true);
+                router.push('/');
                 return;
             }
 
@@ -42,84 +37,149 @@ export default function SyllabusPage() {
 
             if (syllabusError || !syllabusData) {
                 console.error('Error fetching syllabus:', syllabusError);
-                setNotFound(true);
+                router.push('/');
                 return;
             }
 
-            // Set page title
-            document.title = `${syllabusData.title} | PrimerAI`;
+            const dbSyllabus = syllabusData as DbSyllabus;
 
-            // Transform data for the component
             const transformedSyllabus: Syllabus = {
-                ...syllabusData,
-                chapters: (syllabusData.chapters || []).map((chapter: DbChapter) => ({
-                    ...chapter,
-                    lessons: (chapter.lessons || []).map((lesson: DbLesson) => ({
-                        ...lesson,
-                        isLocked: !user && lesson.requires_auth // Lock lessons that require auth for non-authenticated users
+                id: dbSyllabus.id,
+                title: dbSyllabus.title,
+                description: dbSyllabus.description,
+                difficulty_level: dbSyllabus.difficulty_level,
+                estimated_duration: dbSyllabus.estimated_duration,
+                prerequisites: dbSyllabus.prerequisites || [],
+                image_url: dbSyllabus.image_url || null,
+                user_id: dbSyllabus.user_id || undefined,
+                chapters: (dbSyllabus.chapters as DbChapter[])
+                    .sort((a, b) => a.order_index - b.order_index)
+                    .map((chapter) => ({
+                        id: chapter.id,
+                        title: chapter.title,
+                        description: chapter.description,
+                        estimated_duration: chapter.estimated_duration,
+                        emoji: chapter.emoji,
+                        lessons: (chapter.lessons as DbLesson[])
+                            .sort((a, b) => a.order_index - b.order_index)
+                            .map((lesson) => ({
+                                id: lesson.id,
+                                title: lesson.title,
+                                description: lesson.description || null
+                            }))
                     }))
-                }))
             };
 
             setSyllabus(transformedSyllabus);
-        } catch (error) {
-            console.error('Error fetching syllabus:', error);
-            setNotFound(true);
-        } finally {
-            setIsLoading(false);
-        }
-    }, [params.slug, user]);
 
-    useEffect(() => {
+            // Set page title
+            document.title = `${transformedSyllabus.title} | Learning Journey`;
+
+            const generatedLessonsMap = dbSyllabus.chapters.reduce((acc: { [key: string]: DetailedLesson }, chapter) => {
+                chapter.lessons.forEach((lesson: DbLesson) => {
+                    if (lesson.content) {
+                        // Cast the content to DetailedLesson type and ensure it has the required properties
+                        const detailedLesson = lesson.content as unknown as DetailedLesson;
+                        
+                        // Ensure it has the minimal required structure
+                        if (typeof detailedLesson === 'object' && detailedLesson !== null) {
+                            // If the id is missing, use the lesson id
+                            if (!detailedLesson.id) {
+                                detailedLesson.id = lesson.id;
+                            }
+                            
+                            // If the title is missing, use the lesson title
+                            if (!detailedLesson.title) {
+                                detailedLesson.title = lesson.title;
+                            }
+                            
+                            // Store it in the accumulator
+                            acc[lesson.id] = detailedLesson;
+                        }
+                    }
+                });
+                return acc;
+            }, {});
+
+            setGeneratedLessons(generatedLessonsMap);
+        };
+
         fetchSyllabus();
-    }, [fetchSyllabus]);
+    }, [params.slug, router]);
 
-    if (notFound) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <div className="text-center">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Syllabus Not Found</h1>
-                    <p className="text-gray-600 mb-8">The syllabus you're looking for doesn't exist.</p>
-                    <Link href="/dashboard" className="text-purple-600 hover:text-purple-700">
-                        Return to Dashboard
-                    </Link>
-                </div>
-            </div>
-        );
-    }
+    const generateLesson = async (chapter: Chapter, lesson: SyllabusLesson) => {
+        const response = await fetch('/api/generate-lesson', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                lessonId: lesson.id,
+                lessonTitle: lesson.title,
+                chapterTitle: chapter.title,
+                courseTitle: syllabus?.title
+            })
+        });
 
-    if (isLoading) {
-        return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-50">
-                <Loader2 className="w-8 h-8 text-purple-600 animate-spin" />
-            </div>
-        );
-    }
+        if (!response.ok) {
+            throw new Error('Failed to generate lesson');
+        }
+
+        const data = await response.json();
+
+        const { error: updateError } = await supabase
+            .from('lessons')
+            .update({ content: data.lesson })
+            .eq('id', lesson.id);
+
+        if (updateError) {
+            throw new Error('Failed to save lesson content');
+        }
+
+        return data.lesson;
+    };
 
     if (!syllabus) {
-        return null;
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+        );
     }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <SyllabusDisplay syllabus={syllabus} />
-            
-            {!user && (
-                <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 bg-white p-4 rounded-lg shadow-lg border border-gray-200">
-                    <div className="flex items-center justify-between gap-4">
-                        <p className="text-sm text-gray-600">
-                            Sign in to access all lessons and features
-                        </p>
-                        <Link
-                            href={`/login?redirectTo=${encodeURIComponent(window.location.pathname)}`}
-                            className="flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700"
-                        >
-                            <LogIn className="w-4 h-4" />
-                            <span>Sign In</span>
-                        </Link>
-                    </div>
-                </div>
-            )}
-        </div>
+        <main className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+            <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+                <SyllabusDisplay
+                    syllabus={syllabus}
+                    onGenerateFullCourse={async () => {
+                        setGeneratingLessons(true);
+
+                        try {
+                            const newGeneratedLessons = { ...generatedLessons };
+
+                            for (const chapter of syllabus.chapters) {
+                                for (const lesson of chapter.lessons) {
+                                    if (newGeneratedLessons[lesson.id]) {
+                                        continue;
+                                    }
+
+                                    setCurrentGeneratingLesson(`${chapter.title} - ${lesson.title}`);
+                                    const response = await generateLesson(chapter, lesson);
+                                    newGeneratedLessons[lesson.id] = response;
+                                    setGeneratedLessons({ ...newGeneratedLessons });
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Failed to generate lessons:', error);
+                        }
+
+                        setGeneratingLessons(false);
+                        setCurrentGeneratingLesson('');
+                    }}
+                    generatingLessons={generatingLessons}
+                    currentGeneratingLesson={currentGeneratingLesson}
+                    generatedLessons={generatedLessons}
+                />
+            </div>
+        </main>
     );
 }

@@ -1,51 +1,57 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useAuth } from '../context/AuthContext';
-import { supabase } from '../lib/supabase/client';
-import { DbSyllabus } from '../types/database';
-import { Loader2, BookOpen, PlusCircle, Zap, CheckCircle } from 'lucide-react';
-import Link from 'next/link';
-import ProtectedRoute from '../components/ProtectedRoute';
+import { useEffect, useState } from "react";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase/client";
+import { DbSyllabus } from "../types/database";
+import { Loader2, BookOpen, PlusCircle, Zap, Award } from "lucide-react";
+import Link from "next/link";
 
 // Polar subscription URL
-const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
+const POLAR_SUBSCRIPTION_URL =
+  "https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo";
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  // Get the user and subscription status directly from AuthContext
+  const { user, subscriptionStatus } = useAuth();
   const [userSyllabi, setUserSyllabi] = useState<DbSyllabus[]>([]);
   const [loadingSyllabi, setLoadingSyllabi] = useState(true);
-  
-  // Determine subscription status directly from auth context
-  const subscriptionStatus = user?.has_subscription ? 'active' : user?.trial_active ? 'trialing' : 'inactive';
+
+  // No need to determine subscription status manually - use the one from AuthContext
+  // const subscriptionStatus = user?.has_subscription
+  //   ? "active"
+  //   : user?.trial_active
+  //   ? "trialing"
+  //   : "inactive";
 
   // Fetch user syllabi when user is available
+
   useEffect(() => {
     if (!user) return;
-    
+
     const fetchSyllabi = async () => {
       try {
         setLoadingSyllabi(true);
-        
+
         const { data, error } = await supabase
-          .from('syllabi')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false });
-          
+          .from("syllabi")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false });
+
         if (error) {
-          console.error('Error fetching syllabi:', error);
+          console.error("Error fetching syllabi:", error);
           return;
         }
-        
+
         setUserSyllabi(data || []);
       } catch (error) {
-        console.error('Error fetching syllabi:', error);
+        console.error("Failed to fetch syllabi:", error);
       } finally {
         setLoadingSyllabi(false);
       }
     };
-    
+
     fetchSyllabi();
   }, [user]);
 
@@ -59,12 +65,12 @@ export default function Dashboard() {
               My Courses
             </h1>
             <p className="text-gray-500">
-              {userSyllabi.length > 0 
-                ? 'Select a course to continue or create a new one' 
-                : 'Create your first course to get started'}
+              {userSyllabi.length > 0
+                ? "Select a course to continue or create a new one"
+                : "Create your first course to get started"}
             </p>
           </div>
-          
+
           <div className="mt-4 md:mt-0">
             <Link
               href="/"
@@ -75,17 +81,21 @@ export default function Dashboard() {
             </Link>
           </div>
         </div>
-        
+
         {/* Subscription Status Banner */}
-        {subscriptionStatus === 'inactive' && (
+        {subscriptionStatus === "inactive" && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="bg-amber-100 p-2 rounded-full text-amber-600 mt-0.5">
                 <Zap className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">Your trial has ended</h3>
-                <p className="text-gray-500 text-sm">Subscribe to continue generating courses</p>
+                <h3 className="font-medium text-gray-900">
+                  Your trial has ended
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  Subscribe to continue generating courses
+                </p>
               </div>
             </div>
             <a
@@ -98,8 +108,8 @@ export default function Dashboard() {
             </a>
           </div>
         )}
-        
-        {subscriptionStatus === 'trialing' && (
+
+        {subscriptionStatus === "trial" && (
           <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="bg-purple-100 p-2 rounded-full text-purple-600 mt-0.5">
@@ -107,7 +117,9 @@ export default function Dashboard() {
               </div>
               <div>
                 <h3 className="font-medium text-gray-900">Free trial active</h3>
-                <p className="text-gray-500 text-sm">You can generate one full course for free</p>
+                <p className="text-gray-500 text-sm">
+                  You can generate one full course for free
+                </p>
               </div>
             </div>
             <a
@@ -120,21 +132,25 @@ export default function Dashboard() {
             </a>
           </div>
         )}
-        
-        {subscriptionStatus === 'active' && (
-          <div className="bg-white rounded-xl shadow-sm border border-green-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+        {subscriptionStatus === "active" && (
+          <div className="bg-white rounded-xl shadow-sm border border-emerald-200 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
-              <div className="bg-green-100 p-2 rounded-full text-green-600 mt-0.5">
-                <CheckCircle className="w-5 h-5" />
+              <div className="bg-emerald-100 p-2 rounded-full text-emerald-600 mt-0.5">
+                <Award className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-medium text-gray-900">Premium subscription active</h3>
-                <p className="text-gray-500 text-sm">You have unlimited access to all features</p>
+                <h3 className="font-medium text-gray-900">
+                  Pro subscription active
+                </h3>
+                <p className="text-gray-500 text-sm">
+                  You have unlimited access to all features
+                </p>
               </div>
             </div>
           </div>
         )}
-        
+
         {/* Courses Grid / List */}
         {loadingSyllabi ? (
           <div className="flex items-center justify-center min-h-[200px]">
@@ -145,7 +161,9 @@ export default function Dashboard() {
             <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4 flex items-center justify-center">
               <BookOpen className="w-8 h-8" />
             </div>
-            <h2 className="text-xl font-medium text-gray-800 mb-2">No courses yet</h2>
+            <h2 className="text-xl font-medium text-gray-800 mb-2">
+              No courses yet
+            </h2>
             <p className="text-gray-500 mb-6 max-w-md mx-auto">
               Create your first AI-generated course by clicking the button above
             </p>
@@ -153,8 +171,8 @@ export default function Dashboard() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {userSyllabi.map((syllabus) => (
-              <Link 
-                key={syllabus.id} 
+              <Link
+                key={syllabus.id}
                 href={`/syllabus/${syllabus.id}`}
                 className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all flex flex-col h-full"
               >
@@ -179,11 +197,7 @@ export default function Dashboard() {
       </div>
     </main>
   );
-  
+
   // Wrap the dashboard content with the ProtectedRoute component
-  return (
-    <ProtectedRoute>
-      <DashboardContent />
-    </ProtectedRoute>
-  );
-} 
+  return <DashboardContent />;
+}

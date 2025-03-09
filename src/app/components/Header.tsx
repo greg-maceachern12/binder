@@ -2,18 +2,25 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, Loader2 } from 'lucide-react';
+import { User, LogOut, Loader2, Zap, Award } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
-  const { user, isAuthenticated, isLoading, signOut } = useAuth();
+  const { 
+    user, 
+    isAuthenticated, 
+    isLoading, 
+    signOut, 
+    subscriptionStatus, 
+    hasPremium 
+  } = useAuth();
   const [showMenu, setShowMenu] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
   
   // For rare cases where auth gets stuck, we always make sure to show something
-  const [emergencyTimeout, setEmergencyTimeout] = useState(false);
+  // const [emergencyTimeout, setEmergencyTimeout] = useState(false);
   
   // Improved loading state management
   useEffect(() => {
@@ -44,7 +51,7 @@ export default function Header() {
       if (localLoading) {
         console.warn('Emergency timeout triggered - forcing auth display');
         setLocalLoading(false);
-        setEmergencyTimeout(true);
+        // setEmergencyTimeout(true);
       }
     }, 3000);
     
@@ -52,13 +59,13 @@ export default function Header() {
       if (timeoutId) clearTimeout(timeoutId);
       clearTimeout(emergencyTimeoutId);
     };
-  }, [isLoading]);
+  }, [isLoading, localLoading]);
 
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
       await signOut();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error signing out:', error);
     } finally {
       setShowMenu(false);
@@ -85,11 +92,19 @@ export default function Header() {
               className="flex items-center gap-2 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors"
             >
               <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                <User className="w-5 h-5" />
+                {hasPremium ? (
+                  <Award className="w-5 h-5 text-emerald-600" />
+                ) : subscriptionStatus === 'trial' ? (
+                  <Zap className="w-5 h-5 text-indigo-600" />
+                ) : (
+                  <User className="w-5 h-5" />
+                )}
               </div>
               {user?.email && (
                 <span className="text-sm font-medium hidden md:inline-block">
                   {user.email.split('@')[0]}
+                  {hasPremium && <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">PRO</span>}
+                  {subscriptionStatus === 'trial' && <span className="ml-1.5 text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">TRIAL</span>}
                 </span>
               )}
             </button>

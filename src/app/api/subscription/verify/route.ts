@@ -47,7 +47,6 @@ export async function POST(req: Request) {
     if (userData.subscription_id) {
       // Verify subscription with Polar API
       const isActive = await verifySubscription(userData.subscription_id);
-      
       if (isActive) {
         subscriptionStatus = 'active';
         hasGenerationsRemaining = true;
