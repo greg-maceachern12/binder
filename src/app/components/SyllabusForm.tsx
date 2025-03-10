@@ -187,11 +187,11 @@ export default function SyllabusForm() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-4">
+    <div className="max-w-5xl mx-auto px-4">
       {/* Hero Section - Simplified and cleaner */}
       <div className="text-center mb-8 md:mb-12">
-        <div className="inline-flex items-center justify-center mb-6">
-          <div className="relative p-3 rounded-full">
+        <div className="inline-flex items-center justify-center">
+          <div className="relative rounded-full">
             <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
             <Image
               src="/logo_trans.png"
