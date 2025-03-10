@@ -10,7 +10,7 @@ import Link from "next/link";
 // Polar subscription URL
 const POLAR_SUBSCRIPTION_URL =
   "https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo";
-
+  
 export default function Dashboard() {
   // Get the user and subscription status directly from AuthContext
   const { user, subscriptionStatus } = useAuth();
