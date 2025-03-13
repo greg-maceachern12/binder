@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { User, LogOut, Loader2, Zap, Award } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 
 export default function Header() {
@@ -18,6 +18,8 @@ export default function Header() {
   const [showMenu, setShowMenu] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [localLoading, setLocalLoading] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
   
   // For rare cases where auth gets stuck, we always make sure to show something
   // const [emergencyTimeout, setEmergencyTimeout] = useState(false);
@@ -61,6 +63,26 @@ export default function Header() {
     };
   }, [isLoading, localLoading]);
 
+  // Add click outside handler to close the dropdown
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showMenu && 
+        menuRef.current && 
+        buttonRef.current && 
+        !menuRef.current.contains(event.target as Node) && 
+        !buttonRef.current.contains(event.target as Node)
+      ) {
+        setShowMenu(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showMenu]);
+
   const handleSignOut = async () => {
     try {
       setIsSigningOut(true);
@@ -74,7 +96,7 @@ export default function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-10 bg-white/80 backdrop-blur-md shadow-sm">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
       <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo_trans.png" alt="Logo" width={32} height={32} priority />
@@ -88,6 +110,7 @@ export default function Header() {
         ) : isAuthenticated && user ? (
           <div className="relative">
             <button 
+              ref={buttonRef}
               onClick={() => setShowMenu(!showMenu)}
               className="flex items-center gap-2 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors"
             >
@@ -110,8 +133,15 @@ export default function Header() {
             </button>
             
             {showMenu && (
-              <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-20 border border-gray-100">
-                <Link href="/dashboard" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+              <div 
+                ref={menuRef}
+                className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-[100] border border-gray-100"
+              >
+                <Link 
+                  href="/dashboard" 
+                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  onClick={() => setShowMenu(false)}
+                >
                   Dashboard
                 </Link>
                 <button
