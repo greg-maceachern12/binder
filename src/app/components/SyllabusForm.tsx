@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, BookType, Zap, CheckCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, Zap, CheckCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
 import { supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
@@ -54,16 +54,14 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 
 export default function SyllabusForm() {
   // Use the enhanced auth context with subscription status
-  const { user, hasAccess, hasPremium, subscriptionStatus } = useAuth();
+  const { user, hasAccess, hasPremium } = useAuth();
   const [topic, setTopic] = useState('');
   const [courseType, setCourseType] = useState<CourseType>('primer');
   const [successTopic, setSuccessTopic] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [syllabusUrl, setSyllabusUrl] = useState<string | null>(null);
-  const [activeCategory, setActiveCategory] = useState<TopicCategoryKey>('Finance');
   const [coursesGenerated, setCoursesGenerated] = useState<number | null>(null);
-  const [showTopics, setShowTopics] = useState(false);
   const topicInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
   
@@ -74,8 +72,6 @@ export default function SyllabusForm() {
   // Polar subscription URL
   const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
 
-  // Check if user is on trial
-  const isOnTrial = subscriptionStatus === 'trial';
 
   // Show upsell dialog after 4 seconds for eligible users (logged in but no subscription or trial)
   useEffect(() => {
