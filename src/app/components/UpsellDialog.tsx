@@ -27,14 +27,17 @@ export default function UpsellDialog({ isOpen, onClose, storeUrl }: UpsellDialog
     <AnimatePresence>
       {isOpen && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          {/* Backdrop with frosted glass effect */}
+          {/* Backdrop with background image and blue darkening overlay */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            className="fixed inset-0"
             onClick={onClose}
-          />
+          >
+            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url("/bg-lnd2.png")' }}></div>
+            <div className="absolute inset-0 bg-blue-900/60 backdrop-blur-sm"></div>
+          </motion.div>
           
           {/* Dialog content */}
           <div className="flex min-h-full items-center justify-center p-4 text-center">
@@ -117,7 +120,7 @@ export default function UpsellDialog({ isOpen, onClose, storeUrl }: UpsellDialog
               
               {/* CTA */}
               <motion.div 
-                className="mt-8"
+                className="mt-8 flex flex-col items-center"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.6 }}
@@ -126,7 +129,7 @@ export default function UpsellDialog({ isOpen, onClose, storeUrl }: UpsellDialog
                   href={storeUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-center font-medium shadow-md transition-colors"
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-center font-medium shadow-md transition-colors flex items-center justify-center"
                   onClick={() => {
                     // Track click event
                     if (typeof window !== 'undefined') {

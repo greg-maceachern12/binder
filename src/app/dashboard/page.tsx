@@ -57,14 +57,20 @@ export default function Dashboard() {
 
   // Main dashboard content that will be wrapped by ProtectedRoute
   const DashboardContent = () => (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">
-      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12">
+    <main className="min-h-screen relative">
+      {/* Background image with overlay */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: 'url("/bg-lnd.png")' }}></div>
+        <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-[1px]"></div>
+      </div>
+      
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 relative z-10">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
+            <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
               My Courses
             </h1>
-            <p className="text-gray-500">
+            <p className="text-blue-100">
               {userSyllabi.length > 0
                 ? "Select a course to continue or create a new one"
                 : "Create your first course to get started"}
@@ -84,7 +90,7 @@ export default function Dashboard() {
 
         {/* Subscription Status Banner */}
         {subscriptionStatus === "inactive" && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-white/20 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="bg-amber-100 p-2 rounded-full text-amber-600 mt-0.5">
                 <Zap className="w-5 h-5" />
@@ -110,7 +116,7 @@ export default function Dashboard() {
         )}
 
         {subscriptionStatus === "trial" && (
-          <div className="bg-white rounded-xl shadow-sm border border-purple-100 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-purple-200/30 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="bg-purple-100 p-2 rounded-full text-purple-600 mt-0.5">
                 <Zap className="w-5 h-5" />
@@ -134,7 +140,7 @@ export default function Dashboard() {
         )}
 
         {subscriptionStatus === "active" && (
-          <div className="bg-white rounded-xl shadow-sm border border-emerald-200 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="bg-white/80 backdrop-blur-md rounded-xl shadow-md border border-emerald-200/30 p-4 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-start gap-3">
               <div className="bg-emerald-100 p-2 rounded-full text-emerald-600 mt-0.5">
                 <Award className="w-5 h-5" />
@@ -157,7 +163,7 @@ export default function Dashboard() {
             <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
           </div>
         ) : userSyllabi.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 py-12 text-center">
+          <div className="bg-white/90 backdrop-blur-md rounded-xl shadow-md border border-white/20 py-12 text-center">
             <div className="w-16 h-16 rounded-full bg-indigo-100 text-indigo-600 mx-auto mb-4 flex items-center justify-center">
               <BookOpen className="w-8 h-8" />
             </div>
@@ -174,9 +180,9 @@ export default function Dashboard() {
               <Link
                 key={syllabus.id}
                 href={`/syllabus/${syllabus.id}`}
-                className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100 hover:border-indigo-200 hover:shadow-md transition-all flex flex-col h-full"
+                className="bg-white/90 backdrop-blur-md rounded-xl shadow-md overflow-hidden border border-white/20 hover:border-indigo-200 hover:shadow-lg transition-all flex flex-col h-full"
               >
-                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-6">
+                <div className="bg-gradient-to-r from-indigo-500/10 to-purple-500/10 p-6">
                   <h3 className="text-xl font-medium text-gray-900 mb-2">
                     {syllabus.title}
                   </h3>
