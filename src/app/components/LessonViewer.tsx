@@ -20,7 +20,7 @@ const formatLessonContent = (lesson: DetailedLesson) => {
   }
   lesson.content.sections.forEach(section => {
     content += ` ${section.title}. ${section.content} `;
-    if (section.keyPoints.length > 0) {
+    if (section.keyPoints && section.keyPoints.length > 0) {
       content += "Key points to remember: ";
       section.keyPoints.forEach((point, i) => {
         if (i > 0) content += "; ";
@@ -148,7 +148,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                   <p className="text-gray-600 leading-relaxed mb-4 md:mb-6">{section.content}</p>
 
                   {/* Key Points */}
-                  {section.keyPoints.length > 0 && (
+                  {section.keyPoints && section.keyPoints.length > 0 && (
                     <div className="bg-amber-50 rounded-xl md:rounded-2xl p-4 md:p-6 my-4 md:my-6">
                       <h3 className="text-lg md:text-xl text-amber-900 mb-3 md:mb-4">Key Points</h3>
                       <ul className="space-y-2 md:space-y-3">
@@ -163,7 +163,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                   )}
 
                   {/* Examples */}
-                  {section.examples.length > 0 && (
+                  {section.examples && section.examples.length > 0 && (
                     <div className="space-y-3 md:space-y-4 my-4 md:my-6">
                       {section.examples.map((example, j) => (
                         <div key={j} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
@@ -178,7 +178,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             ))}
 
             {/* Practical Exercises */}
-            {lesson.content.practicalExercises.length > 0 && (
+            {lesson.content.practicalExercises && lesson.content.practicalExercises.length > 0 && (
               <div className="mb-8 md:mb-12">
                 <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Practice Exercises</h2>
                 <div className="space-y-4 md:space-y-6">
@@ -187,7 +187,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                       <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">{exercise.title}</h3>
                       <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{exercise.instructions}</p>
 
-                      {exercise.tips.length > 0 && (
+                      {exercise.tips && exercise.tips.length > 0 && (
                         <div className="mb-4 md:mb-6">
                           <h4 className="font-medium text-base md:text-lg mb-2">Tips:</h4>
                           <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
@@ -211,19 +211,21 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             )}
 
             {/* Assessment Section */}
-            {(lesson.assessment.reviewQuestions.length > 0 || lesson.assessment.practiceProblems.length > 0) && (
+            {(lesson.assessment && 
+              ((lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0) || 
+              (lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0))) && (
               <div className="mb-8 md:mb-12">
                 <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Assessment</h2>
 
                 {/* Review Questions */}
-                {lesson.assessment.reviewQuestions.length > 0 && (
+                {lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0 && (
                   <div className="mb-6 md:mb-8">
                     <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Review Questions</h3>
                     <div className="space-y-4 md:space-y-6">
                       {lesson.assessment.reviewQuestions.map((question, i) => (
                         <div key={i} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
                           <h4 className="text-base md:text-lg text-gray-900 mb-3">{question.question}</h4>
-                          {question.hints.length > 0 && (
+                          {question.hints && question.hints.length > 0 && (
                             <div className="mb-3 md:mb-4">
                               <h5 className="font-medium text-sm md:text-base mb-2">Hints:</h5>
                               <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
@@ -244,7 +246,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                 )}
 
                 {/* Practice Problems */}
-                {lesson.assessment.practiceProblems.length > 0 && (
+                {lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0 && (
                   <div>
                     <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Practice Problems</h3>
                     <div className="space-y-4 md:space-y-6">
@@ -271,7 +273,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <div className="mb-8 md:mb-12">
               <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Resources</h2>
               <div className="grid gap-3 md:gap-4">
-                {lesson.resources.required.map((resource, i) => (
+                {lesson.resources && lesson.resources.required && lesson.resources.required.map((resource, i) => (
                   <a
                     key={i}
                     href={resource.url}
@@ -295,7 +297,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                   </a>
                 ))}
                 {/* Supplementary Resources */}
-                {lesson.resources.supplementary && lesson.resources.supplementary.length > 0 && (
+                {lesson.resources && lesson.resources.supplementary && lesson.resources.supplementary.length > 0 && (
                   <div className="mt-6 md:mt-8">
                     <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Supplementary Resources</h3>
                     <div className="grid gap-3 md:gap-4">
@@ -332,9 +334,9 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             <div className="mb-8 md:mb-12">
               <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Next Steps</h2>
               <div className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
-                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps.summary}</p>
+                <p className="text-sm md:text-base text-gray-600 mb-4 md:mb-6">{lesson.nextSteps && lesson.nextSteps.summary}</p>
 
-                {lesson.nextSteps.furtherLearning.length > 0 && (
+                {lesson.nextSteps && lesson.nextSteps.furtherLearning && lesson.nextSteps.furtherLearning.length > 0 && (
                   <div className="mb-4 md:mb-6">
                     <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Further Learning</h3>
                     <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
@@ -345,7 +347,7 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
                   </div>
                 )}
 
-                {lesson.nextSteps.applications.length > 0 && (
+                {lesson.nextSteps && lesson.nextSteps.applications && lesson.nextSteps.applications.length > 0 && (
                   <div>
                     <h3 className="text-base md:text-lg font-medium mb-2 md:mb-3">Practical Applications</h3>
                     <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">

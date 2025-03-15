@@ -435,8 +435,6 @@ export default function SyllabusForm() {
           )}
         </div>
       </div>
-
-      {/* Featured Courses - Enhanced card design */}
       {/* Featured Courses - Enhanced card design with actual images */}
       <div className="mb-8">
         <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">

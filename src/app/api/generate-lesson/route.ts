@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { openai, aiModelLesson } from "@/app/lib/openai";
 import { supabase } from '@/app/lib/supabase/client';
 import { verifySubscription } from '@/app/lib/polar/client';
+import { lessonJsonSchema } from '@/app/lib/schemas';
 
 export async function POST(request: Request) {
   try {
@@ -53,86 +54,17 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "system",
-          content: `You are an expert educator tasked with creating a detailed, print-friendly lesson on ${chapterTitle} as part of a ${courseTitle} course. Your goal is to produce high-quality, practical content that is directly applicable to learners' needs.
-          
-Return a JSON object without any markdown formatting. The response should start the {. Ensure this can be parsed by JSON.parse(). Watch out for quotations as that can break the JSON. Follow this exact structure:
-
-{
-  "id": "lesson-id",
-  "title": "Lesson title",
-  "metadata": {
-    "duration": "Estimated completion time",
-    "difficulty": "Beginner/Intermediate/Advanced",
-    "prerequisites": ["Required knowledge"],
-    "learningObjectives": ["What students will learn. Clear and concise"]
-  },
-  "content": {
-    "summary": "Brief overview of key concepts, focusing on clarity",
-    "sections": [
-      {
-        "title": "Section heading",
-        "content": "Main content text with formatting",
-        "keyPoints": ["Important points to remember that many students might forget or overlook"],
-        "examples": [
-          {
-            "scenario": "Example context",
-            "explanation": "Detailed walkthrough"
-          }
-        ]
-      }
-    ],
-    "practicalExercises": [
-      {
-        "title": "Exercise name",
-        "type": "Individual/Group/Discussion",
-        "instructions": "Step-by-step guide",
-        "tips": ["Helpful suggestions"],
-        "solution": "Sample solution or approach"
-      }
-    ]
-  },
-  "assessment": {
-    "reviewQuestions": [
-      {
-        "question": "Open-ended question",
-        "hints": ["Guiding points"],
-        "sampleAnswer": "Model response"
-      }
-    ],
-    "practiceProblems": [
-      {
-        "problem": "Scenario or question",
-        "approach": "How to solve it",
-        "solution": "Complete answer"
-      }
-    ]
-  },
-  "resources": {
-    "required": [{
-      "title": "Resource name",
-      "type": "Book/Article/Video",
-      "description": "Why it's important",
-      "url": "Link to resource"
-    }],
-    "supplementary": [{
-      "title": "Additional resource",
-      "type": "Resource type",
-      "description": "How it helps",
-      "url": "Link to resource"
-    }]
-  },
-  "nextSteps": {
-    "summary": "Key takeaways",
-    "furtherLearning": ["Suggested topics"],
-    "applications": ["Real-world uses"]
-  }
-}`
+          content: `You are an expert educator tasked with creating a detailed, print-friendly lesson on ${chapterTitle} as part of a ${courseTitle} course. Your goal is to produce high-quality, practical content that is directly applicable to learners' needs.`
         },
         {
           role: "user",
           content: `Create print-friendly lesson content focusing on clarity and ease of learning for "${lessonTitle}" from "${chapterTitle}" in "${courseTitle}". ID: ${lessonId}.`
         }
       ],
+      response_format: {
+        type: "json_schema",
+        json_schema: lessonJsonSchema
+      },
       temperature: 1,
       max_tokens: 5000
     });

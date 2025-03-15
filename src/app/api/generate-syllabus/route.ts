@@ -3,6 +3,7 @@ import { openai, aiModelSyllabus } from "@/app/lib/openai";
 import { supabase } from "@/app/lib/supabase/client";
 import { SyllabusLesson } from "@/app/types";
 import { COURSE_TEMPLATES } from "@/app/lib/templates";
+import { syllabusJsonSchema } from '@/app/lib/schemas';
 
 async function getUnsplashImage(query: string): Promise<string | null> {
   try {
@@ -37,12 +38,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Topic is required" }, { status: 400 });
     }
 
+    // Extract the core instructions from the template
+    const templateContent = COURSE_TEMPLATES[courseType];
+    // Get just the instructions portion (before the JSON structure part)
+    const instructionsPart = templateContent.split("Return a JSON object")[0].trim();
+
     const completion = await openai.chat.completions.create({
       model: aiModelSyllabus,
       messages: [
         {
           role: "system",
-          content: COURSE_TEMPLATES[courseType],
+          content: instructionsPart,
         },
         {
           role: "user",
@@ -53,11 +59,16 @@ export async function POST(request: Request) {
           } for: ${topic}`,
         },
       ],
+      response_format: {
+        type: "json_schema",
+        json_schema: syllabusJsonSchema
+      },
       temperature: 1,
       max_tokens: courseType === "primer" ? 1500 : 3500,
     });
 
     const content = completion.choices[0].message.content;
+
     if (!content) {
       return NextResponse.json(
         { error: "No content received from OpenAI" },
