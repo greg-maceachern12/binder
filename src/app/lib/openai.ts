@@ -4,8 +4,8 @@ if (!process.env.OPENROUTER_API_KEY) {
   throw new Error('Missing API Key');
 }
 
-export const aiModelSyllabus = "openai/gpt-4o-mini";
-export const aiModelLesson = "google/gemini-flash-1.5";
+export const aiModelSyllabus = "openai/gpt-4.1-mini";
+export const aiModelLesson = "openai/gpt-4.1";
 
 export const openai = new OpenAI({
     // apiKey: process.env.OPENAI_API_KEY
