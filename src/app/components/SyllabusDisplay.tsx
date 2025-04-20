@@ -57,7 +57,7 @@ export default function SyllabusDisplay({
         {/* Header Image with Content Overlay */}
         <div className="relative">
           {syllabus.image_url ? (
-            <div className="relative w-full h-56 md:h-72 lg:h-80">
+            <div className="relative w-full h-64 md:h-80 lg:h-96">
               <Image
                 src={syllabus.image_url}
                 alt={syllabus.title}
@@ -65,62 +65,61 @@ export default function SyllabusDisplay({
                 className="object-cover"
                 priority
               />
-              {/* Dark gradient overlay for better text readability */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-black/30"></div>
             </div>
           ) : (
-            <div className="w-full h-56 md:h-72 lg:h-80 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
+            <div className="w-full h-64 md:h-80 lg:h-96 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
           )}
-          
-          {/* Course Info Overlay */}
-          <div className="absolute inset-0 flex flex-col justify-end text-white p-6 md:p-8">
-            <div className="flex flex-col mb-6 md:mb-6">
-              <div className="flex justify-between items-start">
-                <h1 
-                  className="text-2xl md:text-4xl font-bold mb-2 md:mb-3"
-                >
-                  {syllabus.title}
-                </h1>
-                <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(window.location.href);
-                    setCopied(true);
-                    setTimeout(() => setCopied(false), 2000);
-                  }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white/20 backdrop-blur-sm rounded-lg text-white hover:bg-white/30 transition-all text-sm border border-white/30"
-                >
-                  <Share2 className="w-4 h-4" />
-                  <span>{copied ? 'Copied!' : 'Copy Link'}</span>
-                </button>
+
+          {/* Redesigned Overlay */}
+          <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+            {/* Top Row: Badge and Share Button */}
+            <div className="flex justify-between items-start">
+              <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
+                <span className="text-white/90 text-xs font-medium tracking-wide uppercase">
+                  {syllabus.difficulty_level}
+                </span>
               </div>
-              <p className="text-sm md:text-base leading-relaxed text-gray-100 max-w-3xl">
-                {syllabus.description}
-              </p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(window.location.href);
+                  setCopied(true);
+                  setTimeout(() => setCopied(false), 2000);
+                }}
+                className="p-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-all"
+                aria-label={copied ? 'Link Copied' : 'Share course'}
+                title={copied ? 'Link Copied' : 'Share course'}
+              >
+                {copied ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+              </button>
             </div>
 
-            {/* Stats Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-4">
-              {[
-                { label: 'Duration', value: syllabus.estimated_duration, icon: Clock },
-                { label: 'Level', value: syllabus.difficulty_level, icon: Target },
-                { label: 'Chapters', value: syllabus.chapters.length, icon: BookOpen },
-                { label: 'Lessons', value: totalLessons, icon: GraduationCap }
-              ].map((stat, index) => (
-                <div
-                  key={index}
-                  className="bg-white/10 backdrop-blur-sm rounded-lg px-4 md:px-4 py-3 md:py-3 border border-white/30"
-                >
-                  <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
-                    <stat.icon className="w-3.5 h-3.5 md:w-4 md:h-4" />
-                    <span className="text-xs md:text-sm font-medium">
-                      {stat.label}
-                    </span>
-                  </div>
-                  <div className="text-base md:text-xl font-bold">
-                    {typeof stat.value === 'number' ? stat.value.toString() : stat.value}
-                  </div>
+            {/* Bottom Content Block */}
+            <div className="max-w-4xl">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight">
+                {syllabus.title}
+              </h1>
+              <p className="text-base md:text-lg text-white/80 leading-relaxed mb-6 max-w-3xl line-clamp-2 md:line-clamp-3">
+                {syllabus.description}
+              </p>
+              {/* Key Stats */}
+              <div className="flex flex-wrap items-center gap-x-5 md:gap-x-6 gap-y-3 text-white">
+                <div className="flex items-center gap-2" title="Estimated Duration">
+                  <Clock className="w-5 h-5 opacity-80" />
+                  <span className="text-sm md:text-base font-medium">{syllabus.estimated_duration}</span>
                 </div>
-              ))}
+                <div className="flex items-center gap-2" title="Total Lessons">
+                  <GraduationCap className="w-5 h-5 opacity-80" />
+                  <span className="text-sm md:text-base font-medium">{totalLessons} Lessons</span>
+                </div>
+                <div className="flex items-center gap-2" title="Total Chapters">
+                    <BookOpen className="w-5 h-5 opacity-80" />
+                    <span className="text-sm md:text-base font-medium">{syllabus.chapters.length} Chapters</span>
+                </div>
+                <div className="flex items-center gap-2" title="Difficulty Level">
+                    <Target className="w-5 h-5 opacity-80" />
+                    <span className="text-sm md:text-base font-medium">{syllabus.difficulty_level}</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@ if (!process.env.OPENROUTER_API_KEY) {
 }
 
 export const aiModelSyllabus = "openai/gpt-4.1-mini";
-export const aiModelLesson = "openai/gpt-4.1";
+export const aiModelLesson = "openai/gpt-4.1-mini";
 
 export const openai = new OpenAI({
     // apiKey: process.env.OPENAI_API_KEY

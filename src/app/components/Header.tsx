@@ -5,6 +5,17 @@ import Image from 'next/image';
 import { User, LogOut, Loader2, Zap, Award } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Header() {
   const { 
@@ -15,73 +26,27 @@ export default function Header() {
     subscriptionStatus, 
     hasPremium 
   } = useAuth();
-  const [showMenu, setShowMenu] = useState(false);
   const [isSigningOut, setIsSigningOut] = useState(false);
-  const [localLoading, setLocalLoading] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
-  const buttonRef = useRef<HTMLButtonElement>(null);
-  
-  // For rare cases where auth gets stuck, we always make sure to show something
-  // const [emergencyTimeout, setEmergencyTimeout] = useState(false);
-  
-  // Improved loading state management
+  const [localLoading, setLocalLoading] = useState(true);
+
   useEffect(() => {
-    // Initialize with undefined
-    let timeoutId: NodeJS.Timeout | undefined = undefined;
-    
+    let timeoutId: NodeJS.Timeout | undefined;
     if (isLoading) {
-      // Keep loading state in sync, but add protection
       setLocalLoading(true);
-      
-      // If loading takes more than 1.5 seconds, stop showing spinner
       timeoutId = setTimeout(() => {
-        setLocalLoading(false);
-      }, 1500);
+        if (isLoading) {
+          console.warn('Auth loading timeout');
+          setLocalLoading(false); 
+        }
+      }, 3000);
     } else {
-      // Auth context is not loading, clear our loading state
       setLocalLoading(false);
-      
-      // Clear any pending timeout
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
     }
-    
-    // Absolute emergency fallback - if we somehow get stuck indefinitely
-    // Force show login button after 3 seconds
-    const emergencyTimeoutId = setTimeout(() => {
-      if (localLoading) {
-        console.warn('Emergency timeout triggered - forcing auth display');
-        setLocalLoading(false);
-        // setEmergencyTimeout(true);
-      }
-    }, 3000);
-    
+
     return () => {
       if (timeoutId) clearTimeout(timeoutId);
-      clearTimeout(emergencyTimeoutId);
     };
-  }, [isLoading, localLoading]);
-
-  // Add click outside handler to close the dropdown
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        showMenu && 
-        menuRef.current && 
-        buttonRef.current && 
-        !menuRef.current.contains(event.target as Node) && 
-        !buttonRef.current.contains(event.target as Node)
-      ) {
-        setShowMenu(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showMenu]);
+  }, [isLoading]);
 
   const handleSignOut = async () => {
     try {
@@ -90,65 +55,74 @@ export default function Header() {
     } catch (error: unknown) {
       console.error('Error signing out:', error);
     } finally {
-      setShowMenu(false);
       setIsSigningOut(false);
     }
   };
 
+  const getInitials = (email?: string | null): string => {
+    if (!email) return 'U';
+    const namePart = email.split('@')[0];
+    return namePart.substring(0, 2).toUpperCase();
+  };
+
+  const renderUserIcon = () => {
+    if (hasPremium) {
+      return <Award className="w-5 h-5 text-emerald-600" />;
+    } else if (subscriptionStatus === 'trial') {
+      return <Zap className="w-5 h-5 text-indigo-600" />;
+    } else {
+      return <User className="w-5 h-5" />;
+    }
+  };
+
   return (
-    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+    <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-border">
+      <div className="max-w-6xl mx-auto px-4 py-2 flex justify-between items-center">
         <Link href="/" className="flex items-center gap-2">
           <Image src="/logo_trans.png" alt="Logo" width={32} height={32} priority />
           <span className="font-medium text-lg">Primer AI</span>
         </Link>
         
-        {localLoading ? (
-          <div className="w-8 h-8 flex items-center justify-center">
-            <Loader2 className="w-5 h-5 text-indigo-500 animate-spin" />
-          </div>
-        ) : isAuthenticated && user ? (
-          <div className="relative">
-            <button 
-              ref={buttonRef}
-              onClick={() => setShowMenu(!showMenu)}
-              className="flex items-center gap-2 py-1.5 px-3 rounded-full hover:bg-gray-100 transition-colors"
-            >
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600">
-                {hasPremium ? (
-                  <Award className="w-5 h-5 text-emerald-600" />
-                ) : subscriptionStatus === 'trial' ? (
-                  <Zap className="w-5 h-5 text-indigo-600" />
-                ) : (
-                  <User className="w-5 h-5" />
-                )}
-              </div>
-              {user?.email && (
-                <span className="text-sm font-medium hidden md:inline-block">
-                  {user.email.split('@')[0]}
-                  {hasPremium && <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">PRO</span>}
-                  {subscriptionStatus === 'trial' && <span className="ml-1.5 text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">TRIAL</span>}
-                </span>
-              )}
-            </button>
-            
-            {showMenu && (
-              <div 
-                ref={menuRef}
-                className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 z-[100] border border-gray-100"
-              >
-                <Link 
-                  href="/dashboard" 
-                  className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                  onClick={() => setShowMenu(false)}
-                >
-                  Dashboard
-                </Link>
-                <button
-                  onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 disabled:opacity-50"
-                >
+        <div className="flex items-center">
+          {localLoading ? (
+            <div className="flex items-center space-x-2">
+              <Skeleton className="h-8 w-8 rounded-full" />
+              <Skeleton className="h-4 w-20 hidden md:block" />
+            </div>
+          ) : isAuthenticated && user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="flex items-center gap-2 py-1.5 px-2 rounded-full h-auto">
+                  <Avatar className="w-8 h-8">
+                    <AvatarFallback className="bg-indigo-100 text-indigo-600 flex items-center justify-center">
+                      {renderUserIcon()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {user?.email && (
+                    <span className="text-sm font-medium hidden md:inline-block">
+                      {user.email.split('@')[0]}
+                      {hasPremium && <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">PRO</span>}
+                      {subscriptionStatus === 'trial' && <span className="ml-1.5 text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">TRIAL</span>}
+                    </span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.email?.split('@')[0]}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user.email}
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                   <Link href="/dashboard" className="cursor-pointer">
+                     Profile
+                   </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut} className="cursor-pointer">
                   <div className="flex items-center gap-2">
                     {isSigningOut ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -157,16 +131,18 @@ export default function Header() {
                     )}
                     <span>{isSigningOut ? 'Signing out...' : 'Sign out'}</span>
                   </div>
-                </button>
-              </div>
-            )}
-          </div>
-        ) : (
-          <Link href="/login" className="flex items-center gap-1 py-1.5 px-3 rounded-full bg-indigo-50 text-indigo-600 hover:bg-indigo-100 transition-colors text-sm font-medium">
-            <User className="w-4 h-4" />
-            <span>Sign in</span>
-          </Link>
-        )}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button asChild variant="outline" size="sm">
+              <Link href="/login">
+                <User className="mr-2 h-4 w-4" />
+                Sign In
+              </Link>
+            </Button>
+          )}
+        </div>
       </div>
     </header>
   );
