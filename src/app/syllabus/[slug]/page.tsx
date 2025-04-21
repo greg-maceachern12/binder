@@ -51,7 +51,11 @@ export default function SyllabusPage() {
                 estimated_duration: dbSyllabus.estimated_duration,
                 prerequisites: dbSyllabus.prerequisites || [],
                 image_url: dbSyllabus.image_url || null,
+                course_type: dbSyllabus.course_type || 'primer',
+                ai_model:dbSyllabus.ai_model || null,
                 user_id: dbSyllabus.user_id || undefined,
+                created_at: dbSyllabus.created_at,
+                updated_at: dbSyllabus.updated_at,
                 chapters: (dbSyllabus.chapters as DbChapter[])
                     .sort((a, b) => a.order_index - b.order_index)
                     .map((chapter) => ({

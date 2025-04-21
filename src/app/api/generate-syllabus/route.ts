@@ -84,6 +84,7 @@ export async function POST(request: Request) {
     const response = await fetch("https://ipapi.co/json/");
     const locationData = await response.json();
     const userLoc = locationData.city + "," + locationData.country_code;
+    console.log(courseType)
 
     // Then use it in your existing supabase insert
     const { data: syllabusData, error: syllabusError } = await supabase
@@ -98,6 +99,8 @@ export async function POST(request: Request) {
         location: userLoc, // Using the IP column to store city instead
         isp: locationData.org || null,
         user_id: userId,
+        course_type: courseType,
+        ai_model: aiModelSyllabus
       })
       .select()
       .single();

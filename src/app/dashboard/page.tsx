@@ -10,16 +10,27 @@ import UpsellDialog from "../components/UpsellDialog";
 import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
 
 // Polar subscription URL
 const POLAR_SUBSCRIPTION_URL =
   "https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo";
   
 export default function Dashboard() {
-  const { user, subscriptionStatus } = useAuth();
+  const { user, subscriptionStatus, isLoading } = useAuth();
   const [userSyllabi, setUserSyllabi] = useState<DbSyllabus[]>([]);
   const [loadingSyllabi, setLoadingSyllabi] = useState(true);
   const [showUpsell, setShowUpsell] = useState(false);
+  const router = useRouter();
+
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !user) {
+      // Store the current path to redirect back after login
+      sessionStorage.setItem('redirectAfterLogin', '/dashboard');
+      router.push('/login');
+    }
+  }, [user, isLoading, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -49,6 +60,20 @@ export default function Dashboard() {
 
     fetchSyllabi();
   }, [user]);
+
+  // If still loading auth state, show loading spinner
+  if (isLoading) {
+    return (
+      <div className="min-h-[calc(100vh-56px)] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  // If not authenticated, don't render anything (redirect will happen from useEffect)
+  if (!user) {
+    return null;
+  }
 
   const DashboardContent = () => (
     <main className="min-h-[calc(100vh-56px)] bg-gradient-to-br from-slate-50 via-white to-indigo-50 flex flex-col">

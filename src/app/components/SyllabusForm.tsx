@@ -101,7 +101,7 @@ export default function SyllabusForm() {
         }
         
         // Add a bit of social proof by increasing the displayed number
-        setCoursesGenerated(count ? count + 12548 : 12548);
+        setCoursesGenerated(count ? count + 112 : 112);
       } catch (error) {
         console.error('Error in fetchSyllabiCount:', error);
       }
@@ -212,13 +212,13 @@ export default function SyllabusForm() {
         
         <h1 className="text-3xl md:text-4xl text-gray-900 mb-3 leading-tight">
           <span className="animate-gradient bg-gradient-to-r from-blue-600 via-yellow-600 to-pink-500 bg-clip-text text-transparent bg-300%">
-            Learn anything
+            Unlock your curiosity
           </span>
           <span className="block text-2xl md:text-3xl mt-1 text-gray-800">with Primer AI</span>
         </h1>
         
         <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto mb-4">
-          Generate personalized learning paths tailored to your interests and needs
+        Turn your interests into expertise with handcrafted learning journeys that fit your style
         </p>
         
         {/* Social proof banner */}
@@ -242,12 +242,12 @@ export default function SyllabusForm() {
           </div>
         )}
 
-        <h2 className="text-base md:text-lg font-medium text-gray-900 mb-3">Create your personalized course</h2>
+        <h2 className="text-base md:text-lg font-medium text-gray-900 mb-3">Craft your personalized course</h2>
         
         <form onSubmit={handleSubmit} className="space-y-3">
           {/* Topic Input - Simplified without dropdown */}
           <div>
-            <label htmlFor="topic" className="block text-xs font-medium text-gray-700 mb-1">What would you like to learn?</label>
+            <label htmlFor="topic" className="block text-xs font-medium text-gray-700 mb-1">What sparks your curiosity today?</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -256,7 +256,7 @@ export default function SyllabusForm() {
                 type="text"
                 value={topic}
                 onChange={handleTopicChange}
-                placeholder="Enter any topic or skill..."
+                placeholder="Japanese cooking, urban sketching, crypto basics..."
                 className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 transition-all"
                 disabled={isLoading}
               />
@@ -274,7 +274,7 @@ export default function SyllabusForm() {
           
           {/* Course Type Selection - More compact */}
           <div>
-            <label className="block text-xs font-medium text-gray-700 mb-1">Choose your learning experience</label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">How deep do you want to dive?</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <button
                 type="button"
@@ -295,7 +295,7 @@ export default function SyllabusForm() {
                   </div>
                   <span className="font-medium text-xs">Quick Primer</span>
                 </div>
-                <p className="text-xs text-gray-600 pl-7 mt-0.5">High-level crash course</p>
+                <p className="text-xs text-gray-600 pl-7 mt-0.5">Weekend warrior edition - the essentials in a flash</p>
               </button>
               
               <button
@@ -336,7 +336,7 @@ export default function SyllabusForm() {
                     </span>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 pl-7 mt-0.5">Comprehensive curriculum</p>
+                <p className="text-xs text-gray-600 pl-7 mt-0.5">Master class edition - from novice to knowledgeable</p>
 
               </button>
             </div>
@@ -352,7 +352,7 @@ export default function SyllabusForm() {
               {isLoading ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  <span>Creating your course...</span>
+                  <span>Crafting your perfect course...</span>
                 </>
               ) : !user ? (
                 <>
@@ -362,12 +362,12 @@ export default function SyllabusForm() {
               ) : !hasAccess ? (
                 <>
                   <Sparkles className="w-3.5 h-3.5" />
-                  <span>Upgrade to Pro</span>
+                  <span>Unlock Premium Learning</span>
                 </>
               ) : (
                 <>
                   <BookOpen className="w-3.5 h-3.5" />
-                  <span>Create My Course</span>
+                  <span>Craft My Course</span>
                 </>
               )}
             </button>
@@ -376,7 +376,7 @@ export default function SyllabusForm() {
           {/* Info text - Smaller */}
           {user && hasAccess && (
             <p className="text-center text-[11px] text-gray-500">
-              Your personalized course will be ready in seconds
+              Your tailor-made curriculum is just moments away
             </p>
           )}
         </form>
@@ -395,7 +395,7 @@ export default function SyllabusForm() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="w-4 h-4 text-green-600" />
                 <h3 className="font-medium text-green-800 text-sm">
-                  Your {courseType === 'primer' ? 'primer' : 'course'} on {successTopic} is ready!
+                  Your {courseType === 'primer' ? 'primer' : 'course'} on {successTopic} is ready to explore!
                 </h3>
               </div>
               <a
@@ -406,7 +406,7 @@ export default function SyllabusForm() {
                 }}
                 className="px-2 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors text-center font-medium text-xs whitespace-nowrap"
               >
-                View Course
+                Start Learning
               </a>
             </div>
           </div>
@@ -417,7 +417,7 @@ export default function SyllabusForm() {
       <div className="mb-16">
         <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-indigo-600" />
-          <span>Popular Topics to Explore</span>
+          <span>Hot Topics Right Now</span>
         </h2>
         
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
@@ -439,28 +439,28 @@ export default function SyllabusForm() {
       <div className="mb-8">
         <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
           <BookOpen className="w-5 h-5 text-indigo-600" />
-          <span>Featured Courses</span>
+          <span>Staff Picks & Community Favorites</span>
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
           {[
             {
               title: "🏠 DIY A-Frame Constructions",
-              description: "Learn how to design and build your own A-frame structure, from planning to final touches.",
+              description: "Master the art of building your dream A-frame retreat, from blueprint to final nail.",
               href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b",
               img: "https://images.unsplash.com/photo-1573812331441-d99117496acb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
               category: "Home Building"
             },
             {
               title: "💰 Wealth Management - Primer",
-              description: "A focused introduction to get you started quickly with wealth management.",
+              description: "Navigate the world of personal finance with insider strategies for building lasting wealth.",
               href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c",
               img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
               category: "Finance"
             },
             {
               title: "🌱 Microgreens Garden",
-              description: "Everything from fundamentals to advanced techniques for growing microgreens.",
+              description: "Transform your windowsill into a flourishing microgreen oasis — from seed to harvest.",
               href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29",
               img: "https://images.unsplash.com/photo-1702351253307-e6f8a3f308ff?q=80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
               category: "Gardening"

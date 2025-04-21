@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2, Lock, FileText, Play } from 'lucide-react';
+import { Loader2, BookOpen, Clock, Target, GraduationCap, CheckCircle, ArrowRight, AlertCircle, ChevronLeft, Share2, Lock, FileText, Play, Ruler, Brain } from 'lucide-react';
 import { Syllabus, DetailedLesson } from '@/app/types';
 import CourseDownloader from './CourseDownloader';
 import LessonViewer from './LessonViewer';
@@ -40,7 +40,7 @@ export default function SyllabusDisplay({
 
   const totalLessons = useMemo(() => syllabus.chapters.reduce((sum, chapter) => sum + chapter.lessons.length, 0), [syllabus.chapters]);
   const completedLessons = useMemo(() => Object.keys(generatedLessons).length, [generatedLessons]);
-
+  console.log(syllabus)
   return (
     <div className="max-w-5xl mx-auto px-4 md:px-0">
       {/* Back Button */}
@@ -73,25 +73,30 @@ export default function SyllabusDisplay({
 
           {/* Redesigned Minimalist Overlay */}
           <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
-            {/* Top Row with Glass Effect */}
-            <div className="flex justify-between items-start">
-              <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-sm">
-                <span className="text-white text-xs font-medium tracking-wider">
-                  {syllabus.difficulty_level}
-                </span>
-              </div>
-              
+            {/* Top Row with Glass Effect - Improved Layout */}
+            <div className="flex flex-col md:flex-row justify-between items-start gap-6">
+              {/* Share Button Only */}
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="p-2.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all shadow-sm"
+                className="p-2 bg-white/10 backdrop-blur-md rounded-md border border-white/20 text-white hover:bg-white/20 transition-all shadow-sm group"
                 aria-label={copied ? 'Link Copied' : 'Share course'}
                 title={copied ? 'Link Copied' : 'Share course'}
               >
-                {copied ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
+                {copied ? (
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium hidden group-hover:inline">Copied!</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-2">
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span className="text-xs font-medium hidden group-hover:inline">Share</span>
+                  </div>
+                )}
               </button>
             </div>
 
@@ -112,23 +117,41 @@ export default function SyllabusDisplay({
               {/* Pill Stats with Subtle Separator */}
               <div className="flex flex-wrap items-center gap-2 md:gap-3">
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Estimated Duration">
+                  <Ruler className="w-4 h-4" />
+                  <span className="font-medium">{syllabus.course_type === 'fullCourse' ? (
+                    <>
+                      Full Course
+                    </>
+                  ) : syllabus.course_type === 'primer' ? (
+                    <>
+                      Primer
+                    </>
+                  ) : (
+                    syllabus.course_type
+                  )}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Estimated Duration">
                   <Clock className="w-4 h-4" />
                   <span className="font-medium">{syllabus.estimated_duration}</span>
                 </div>
-                
+                {/* Lessons */}
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Total Lessons">
                   <GraduationCap className="w-4 h-4" />
                   <span className="font-medium">{totalLessons} Lessons</span>
                 </div>
-                
+                {/* Chapters */}
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Total Chapters">
                   <BookOpen className="w-4 h-4" />
                   <span className="font-medium">{syllabus.chapters.length} Chapters</span>
                 </div>
-                
+                {/* Difficulty */}
                 <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Difficulty Level">
                   <Target className="w-4 h-4" />
                   <span className="font-medium">{syllabus.difficulty_level}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Difficulty Level">
+                  <Brain className="w-4 h-4" />
+                  <span className="font-medium">{syllabus.ai_model}</span>
                 </div>
               </div>
             </div>

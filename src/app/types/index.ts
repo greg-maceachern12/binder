@@ -25,8 +25,12 @@ export type Syllabus = {
   estimated_duration: string;
   prerequisites: string[] | null;
   image_url: string | null;
-  user_id?: string;
+  user_id?: string | null;
   chapters: Chapter[];
+  course_type: string;
+  ai_model?: string | null;
+  created_at: string;
+  updated_at: string;
 };
 
 // Detailed lesson types

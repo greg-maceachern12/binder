@@ -9,6 +9,7 @@ export type DbLesson = {
     requires_auth?: boolean;
     created_at: string;
     updated_at: string;
+    ai_model?: string | null;
 };
 
 export type DbChapter = {
@@ -35,4 +36,6 @@ export type DbSyllabus = {
     chapters: DbChapter[];
     created_at: string;
     updated_at: string;
+    course_type?: string;
+    ai_model?: string | null;
 };

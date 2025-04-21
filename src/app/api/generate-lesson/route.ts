@@ -80,7 +80,10 @@ export async function POST(request: Request) {
     // Save the generated lesson content to Supabase
     const { error: updateError } = await supabase
       .from('lessons')
-      .update({ content: lesson })
+      .update({ 
+        content: lesson, 
+        ai_model: aiModelLesson
+      })
       .eq('id', lessonId);
 
     if (updateError) {
