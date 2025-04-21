@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { User, LogOut, Loader2, Zap, Award } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from "@/components/ui/button";
 import {
@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Header() {
@@ -58,13 +58,7 @@ export default function Header() {
       setIsSigningOut(false);
     }
   };
-
-  const getInitials = (email?: string | null): string => {
-    if (!email) return 'U';
-    const namePart = email.split('@')[0];
-    return namePart.substring(0, 2).toUpperCase();
-  };
-
+  
   const renderUserIcon = () => {
     if (hasPremium) {
       return <Award className="w-5 h-5 text-emerald-600" />;

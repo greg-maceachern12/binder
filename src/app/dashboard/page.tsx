@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase/client";
 import { DbSyllabus } from "../types/database";
-import { Loader2, BookOpen, PlusCircle, Zap, Award, Sparkles, Terminal } from "lucide-react";
+import { Loader2, BookOpen, PlusCircle, Zap, Award, Sparkles } from "lucide-react";
 import Link from "next/link";
 import UpsellDialog from "../components/UpsellDialog";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 
 // Polar subscription URL
 const POLAR_SUBSCRIPTION_URL =
