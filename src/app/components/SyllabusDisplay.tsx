@@ -65,59 +65,70 @@ export default function SyllabusDisplay({
                 className="object-cover"
                 priority
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent mix-blend-multiply" />
             </div>
           ) : (
             <div className="w-full h-64 md:h-80 lg:h-96 bg-gradient-to-br from-indigo-600 to-purple-700"></div>
           )}
 
-          {/* Redesigned Overlay */}
-          <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-            {/* Top Row: Badge and Share Button */}
+          {/* Redesigned Minimalist Overlay */}
+          <div className="absolute inset-0 flex flex-col justify-between p-6 md:p-8">
+            {/* Top Row with Glass Effect */}
             <div className="flex justify-between items-start">
-              <div className="px-3 py-1 bg-white/10 backdrop-blur-sm rounded-full border border-white/20">
-                <span className="text-white/90 text-xs font-medium tracking-wide uppercase">
+              <div className="px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 shadow-sm">
+                <span className="text-white text-xs font-medium tracking-wider">
                   {syllabus.difficulty_level}
                 </span>
               </div>
+              
               <button
                 onClick={() => {
                   navigator.clipboard.writeText(window.location.href);
                   setCopied(true);
                   setTimeout(() => setCopied(false), 2000);
                 }}
-                className="p-2 bg-white/10 backdrop-blur-sm rounded-full text-white hover:bg-white/20 transition-all"
+                className="p-2.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/20 text-white hover:bg-white/20 transition-all shadow-sm"
                 aria-label={copied ? 'Link Copied' : 'Share course'}
                 title={copied ? 'Link Copied' : 'Share course'}
               >
-                {copied ? <CheckCircle className="w-5 h-5" /> : <Share2 className="w-5 h-5" />}
+                {copied ? <CheckCircle className="w-4 h-4" /> : <Share2 className="w-4 h-4" />}
               </button>
             </div>
 
-            {/* Bottom Content Block */}
-            <div className="max-w-4xl">
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 leading-tight">
+            {/* Bottom Content Block with Modern Layout */}
+            <div className="space-y-5">
+              {/* Title with Gradient Text */}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight">
                 {syllabus.title}
               </h1>
-              <p className="text-base md:text-lg text-white/80 leading-relaxed mb-6 max-w-3xl line-clamp-2 md:line-clamp-3">
-                {syllabus.description}
-              </p>
-              {/* Key Stats */}
-              <div className="flex flex-wrap items-center gap-x-5 md:gap-x-6 gap-y-3 text-white">
-                <div className="flex items-center gap-2" title="Estimated Duration">
-                  <Clock className="w-5 h-5 opacity-80" />
-                  <span className="text-sm md:text-base font-medium">{syllabus.estimated_duration}</span>
+              
+              {/* Description with Frosted Glass */}
+              <div className="bg-black/25 backdrop-blur-sm rounded-xl p-4 max-w-3xl">
+                <p className="text-base md:text-lg text-white/90 leading-relaxed line-clamp-2 md:line-clamp-3">
+                  {syllabus.description}
+                </p>
+              </div>
+              
+              {/* Pill Stats with Subtle Separator */}
+              <div className="flex flex-wrap items-center gap-2 md:gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Estimated Duration">
+                  <Clock className="w-4 h-4" />
+                  <span className="font-medium">{syllabus.estimated_duration}</span>
                 </div>
-                <div className="flex items-center gap-2" title="Total Lessons">
-                  <GraduationCap className="w-5 h-5 opacity-80" />
-                  <span className="text-sm md:text-base font-medium">{totalLessons} Lessons</span>
+                
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Total Lessons">
+                  <GraduationCap className="w-4 h-4" />
+                  <span className="font-medium">{totalLessons} Lessons</span>
                 </div>
-                <div className="flex items-center gap-2" title="Total Chapters">
-                    <BookOpen className="w-5 h-5 opacity-80" />
-                    <span className="text-sm md:text-base font-medium">{syllabus.chapters.length} Chapters</span>
+                
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Total Chapters">
+                  <BookOpen className="w-4 h-4" />
+                  <span className="font-medium">{syllabus.chapters.length} Chapters</span>
                 </div>
-                <div className="flex items-center gap-2" title="Difficulty Level">
-                    <Target className="w-5 h-5 opacity-80" />
-                    <span className="text-sm md:text-base font-medium">{syllabus.difficulty_level}</span>
+                
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-white/10 backdrop-blur-md rounded-full text-sm text-white" title="Difficulty Level">
+                  <Target className="w-4 h-4" />
+                  <span className="font-medium">{syllabus.difficulty_level}</span>
                 </div>
               </div>
             </div>
