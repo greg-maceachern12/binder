@@ -93,18 +93,40 @@ export default function Header() {
                     </AvatarFallback>
                   </Avatar>
                   {user?.email && (
-                    <span className="text-sm font-medium hidden md:inline-block">
-                      {user.email.split('@')[0]}
-                      {hasPremium && <span className="ml-1.5 text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">PRO</span>}
-                      {subscriptionStatus === 'trial' && <span className="ml-1.5 text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">TRIAL</span>}
-                    </span>
+                    <div className="hidden md:flex items-center gap-1.5">
+                      <span className="text-sm font-medium">
+                        {user.email.split('@')[0]}
+                      </span>
+                      {hasPremium && (
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200 font-medium">
+                          PRO
+                        </span>
+                      )}
+                      {subscriptionStatus === 'trial' && (
+                        <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium">
+                          TRIAL
+                        </span>
+                      )}
+                    </div>
                   )}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.email?.split('@')[0]}</p>
+                    <p className="text-sm font-medium leading-none flex items-center gap-2">
+                      Account
+                      {hasPremium && (
+                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">
+                          PRO
+                        </span>
+                      )}
+                      {subscriptionStatus === 'trial' && (
+                        <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">
+                          TRIAL
+                        </span>
+                      )}
+                    </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}
                     </p>
@@ -112,8 +134,9 @@ export default function Header() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                   <Link href="/dashboard" className="cursor-pointer">
-                     Profile
+                   <Link href="/dashboard" className="cursor-pointer flex items-center gap-2">
+                     <User className="w-4 h-4" />
+                     Profile Settings
                    </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleSignOut} disabled={isSigningOut} className="cursor-pointer">

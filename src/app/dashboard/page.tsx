@@ -179,9 +179,9 @@ export default function Dashboard() {
               <Link key={syllabus.id} href={`/syllabus/${syllabus.id}`} className="block">
                  <Card className="h-full flex flex-col hover:border-primary transition-colors group">
                     <CardHeader>
-                       <CardTitle className="text-lg group-hover:text-primary transition-colors">
+                       <h1 className="text-xl font-bold group-hover:text-primary transition-colors">
                          {syllabus.title}
-                       </CardTitle>
+                       </h1>
                        <CardDescription className="line-clamp-3 h-[60px]">
                          {syllabus.description}
                        </CardDescription>
