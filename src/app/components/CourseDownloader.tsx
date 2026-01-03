@@ -3,8 +3,8 @@ import React from 'react';
 import { Download } from 'lucide-react';
 import JSZip from 'jszip';
 import { jsPDF } from 'jspdf';
-import { 
-  Syllabus, 
+import {
+  Syllabus,
   DetailedLesson,
 } from '@/app/types';
 
@@ -99,12 +99,12 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
           pdf.setFontSize(14);
           pdf.text('Example:', margin, y);
           y += 8;
-          
+
           pdf.setFontSize(12);
           const scenarioLines = pdf.splitTextToSize(`Scenario: ${example.scenario}`, contentWidth);
           pdf.text(scenarioLines, margin, y);
           y += 8 * scenarioLines.length;
-          
+
           const explanationLines = pdf.splitTextToSize(`Explanation: ${example.explanation}`, contentWidth);
           pdf.text(explanationLines, margin, y);
           y += 8 * explanationLines.length + 10;
@@ -124,15 +124,15 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
         pdf.setFontSize(14);
         pdf.text(exercise.title, margin, y);
         y += 8;
-        
+
         pdf.setFontSize(12);
         pdf.text(`Type: ${exercise.type}`, margin, y);
         y += 8;
-        
+
         const instructionLines = pdf.splitTextToSize(exercise.instructions, contentWidth);
         pdf.text(instructionLines, margin, y);
         y += 8 * instructionLines.length + 8;
-        
+
         if (exercise.tips?.length > 0) {
           pdf.setFontSize(14);
           pdf.text('Tips:', margin, y);
@@ -217,7 +217,7 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
         pdf.setFontSize(14);
         pdf.text('Required Resources:', margin, y);
         y += 10;
-        
+
         lesson.resources.required.forEach(resource => {
           pdf.setFontSize(12);
           pdf.text(`• ${resource.title} (${resource.type})`, margin, y);
@@ -233,7 +233,7 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
         pdf.setFontSize(14);
         pdf.text('Supplementary Resources:', margin, y);
         y += 10;
-        
+
         lesson.resources.supplementary.forEach(resource => {
           pdf.setFontSize(12);
           pdf.text(`• ${resource.title} (${resource.type})`, margin, y);
@@ -246,9 +246,9 @@ export default function CourseDownloader({ syllabus, generatedLessons }: CourseD
     }
 
     // Next Steps
-    if (lesson.nextSteps?.summary || 
-        lesson.nextSteps?.furtherLearning?.length > 0 || 
-        lesson.nextSteps?.applications?.length > 0) {
+    if (lesson.nextSteps?.summary ||
+      lesson.nextSteps?.furtherLearning?.length > 0 ||
+      lesson.nextSteps?.applications?.length > 0) {
       pdf.addPage();
       y = 20;
       pdf.setFontSize(18);

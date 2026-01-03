@@ -1,9 +1,16 @@
+/**
+ * @deprecated This API route is deprecated and will be removed in a future version.
+ * The play lesson audio functionality is no longer supported.
+ */
 // src/app/api/generate-speech/route.ts
 import { NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
 const openai = new OpenAI();
 
+/**
+ * @deprecated This endpoint is deprecated. Audio generation functionality is no longer supported.
+ */
 export async function POST(request: Request) {
   try {
     const { title, content } = await request.json();
@@ -41,3 +48,4 @@ export async function POST(request: Request) {
     );
   }
 }
+

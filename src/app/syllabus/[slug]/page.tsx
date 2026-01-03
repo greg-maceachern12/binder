@@ -52,7 +52,7 @@ export default function SyllabusPage() {
                 prerequisites: dbSyllabus.prerequisites || [],
                 image_url: dbSyllabus.image_url || null,
                 course_type: dbSyllabus.course_type || 'primer',
-                ai_model:dbSyllabus.ai_model || null,
+                ai_model: dbSyllabus.ai_model || null,
                 user_id: dbSyllabus.user_id || undefined,
                 created_at: dbSyllabus.created_at,
                 updated_at: dbSyllabus.updated_at,
@@ -84,19 +84,19 @@ export default function SyllabusPage() {
                     if (lesson.content) {
                         // Cast the content to DetailedLesson type and ensure it has the required properties
                         const detailedLesson = lesson.content as unknown as DetailedLesson;
-                        
+
                         // Ensure it has the minimal required structure
                         if (typeof detailedLesson === 'object' && detailedLesson !== null) {
                             // If the id is missing, use the lesson id
                             if (!detailedLesson.id) {
                                 detailedLesson.id = lesson.id;
                             }
-                            
+
                             // If the title is missing, use the lesson title
                             if (!detailedLesson.title) {
                                 detailedLesson.title = lesson.title;
                             }
-                            
+
                             // Store it in the accumulator
                             acc[lesson.id] = detailedLesson;
                         }

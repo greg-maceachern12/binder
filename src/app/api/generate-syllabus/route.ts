@@ -52,11 +52,10 @@ export async function POST(request: Request) {
         },
         {
           role: "user",
-          content: `Create a ${
-            courseType === "primer"
+          content: `Create a ${courseType === "primer"
               ? "focused quick-start guide"
               : "comprehensive course outline"
-          } for: ${topic}`,
+            } for: ${topic}`,
         },
       ],
       response_format: {
@@ -142,6 +141,11 @@ export async function POST(request: Request) {
       if (lessonsError) throw lessonsError;
     }
 
+    // ==========================================
+    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
+    // Uncomment this block to restore trial deactivation after first generation
+    // ==========================================
+    /*
     // If user is on a trial (has no subscription_id), update trial_active to false
     if (userId) {
       // First get the user to check their current status
@@ -164,6 +168,7 @@ export async function POST(request: Request) {
         }
       }
     }
+    */
 
     // Return the syllabus ID as the slug
     return NextResponse.json({

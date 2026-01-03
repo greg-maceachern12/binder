@@ -1,3 +1,7 @@
+/**
+ * @deprecated This component is deprecated and will be removed in a future version.
+ * The play lesson audio functionality is no longer supported.
+ */
 import React, { useState, useRef } from 'react';
 import { Play, Pause, Loader2 } from 'lucide-react';
 
@@ -6,6 +10,9 @@ interface AudioPlayerProps {
   lessonContent: string;
 }
 
+/**
+ * @deprecated AudioPlayer component is deprecated. Audio playback functionality is no longer supported.
+ */
 export default function AudioPlayer({ lessonTitle, lessonContent }: AudioPlayerProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -115,3 +122,4 @@ export default function AudioPlayer({ lessonTitle, lessonContent }: AudioPlayerP
     </div>
   );
 }
+

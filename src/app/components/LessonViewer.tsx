@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Book, Clock, Target, X, Menu, ExternalLink } from 'lucide-react';
-import AudioPlayer from './AudioPlayer';
+// @deprecated AudioPlayer is deprecated and will be removed in a future version
+// import AudioPlayer from './AudioPlayer';
 import { DetailedLesson } from '@/app/types';
 
 interface LessonViewerProps {
@@ -8,28 +9,32 @@ interface LessonViewerProps {
   onClose: () => void;
 }
 
-const formatLessonContent = (lesson: DetailedLesson) => {
-  let content = `${lesson.title}. `;
-  content += "In this lesson, we'll cover the following objectives: ";
-  lesson.metadata.learningObjectives.forEach((obj, i) => {
-    if (i > 0) content += "; ";
-    content += obj;
-  });
-  if (lesson.content.summary) {
-    content += ` ${lesson.content.summary} `;
-  }
-  lesson.content.sections.forEach(section => {
-    content += ` ${section.title}. ${section.content} `;
-    if (section.keyPoints && section.keyPoints.length > 0) {
-      content += "Key points to remember: ";
-      section.keyPoints.forEach((point, i) => {
-        if (i > 0) content += "; ";
-        content += point;
-      });
-    }
-  });
-  return content;
-};
+/**
+ * @deprecated This function is deprecated. It was only used for audio formatting.
+ * The play lesson audio functionality is no longer supported.
+ */
+// const formatLessonContent = (lesson: DetailedLesson) => {
+//   let content = `${lesson.title}. `;
+//   content += "In this lesson, we'll cover the following objectives: ";
+//   lesson.metadata.learningObjectives.forEach((obj, i) => {
+//     if (i > 0) content += "; ";
+//     content += obj;
+//   });
+//   if (lesson.content.summary) {
+//     content += ` ${lesson.content.summary} `;
+//   }
+//   lesson.content.sections.forEach(section => {
+//     content += ` ${section.title}. ${section.content} `;
+//     if (section.keyPoints && section.keyPoints.length > 0) {
+//       content += "Key points to remember: ";
+//       section.keyPoints.forEach((point, i) => {
+//         if (i > 0) content += "; ";
+//         content += point;
+//       });
+//     }
+//   });
+//   return content;
+// };
 
 export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -90,7 +95,8 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               </button>
             </div>
 
-            {/* Menu and Audio player container */}
+            {/* Menu button container */}
+            {/* @deprecated AudioPlayer functionality is deprecated and commented out */}
             <div className="px-4 md:px-6 py-4 flex items-center gap-2">
               <button
                 onClick={() => setIsSidebarOpen(true)}
@@ -99,10 +105,11 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
               >
                 <Menu className="w-5 h-5" />
               </button>
-              <AudioPlayer
+              {/* @deprecated AudioPlayer is deprecated - audio playback functionality is no longer supported */}
+              {/* <AudioPlayer
                 lessonTitle={lesson.title}
                 lessonContent={formatLessonContent(lesson)}
-              />
+              /> */}
             </div>
           </div>
 
@@ -211,63 +218,63 @@ export default function LessonViewer({ lesson, onClose }: LessonViewerProps) {
             )}
 
             {/* Assessment Section */}
-            {(lesson.assessment && 
-              ((lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0) || 
-              (lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0))) && (
-              <div className="mb-8 md:mb-12">
-                <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Assessment</h2>
+            {(lesson.assessment &&
+              ((lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0) ||
+                (lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0))) && (
+                <div className="mb-8 md:mb-12">
+                  <h2 className="text-xl md:text-2xl text-gray-900 mb-4 md:mb-6">Assessment</h2>
 
-                {/* Review Questions */}
-                {lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0 && (
-                  <div className="mb-6 md:mb-8">
-                    <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Review Questions</h3>
-                    <div className="space-y-4 md:space-y-6">
-                      {lesson.assessment.reviewQuestions.map((question, i) => (
-                        <div key={i} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
-                          <h4 className="text-base md:text-lg text-gray-900 mb-3">{question.question}</h4>
-                          {question.hints && question.hints.length > 0 && (
-                            <div className="mb-3 md:mb-4">
-                              <h5 className="font-medium text-sm md:text-base mb-2">Hints:</h5>
-                              <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
-                                {question.hints.map((hint, j) => (
-                                  <li key={j} className="text-sm md:text-base text-gray-600">{hint}</li>
-                                ))}
-                              </ul>
+                  {/* Review Questions */}
+                  {lesson.assessment.reviewQuestions && lesson.assessment.reviewQuestions.length > 0 && (
+                    <div className="mb-6 md:mb-8">
+                      <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Review Questions</h3>
+                      <div className="space-y-4 md:space-y-6">
+                        {lesson.assessment.reviewQuestions.map((question, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <h4 className="text-base md:text-lg text-gray-900 mb-3">{question.question}</h4>
+                            {question.hints && question.hints.length > 0 && (
+                              <div className="mb-3 md:mb-4">
+                                <h5 className="font-medium text-sm md:text-base mb-2">Hints:</h5>
+                                <ul className="list-disc pl-4 md:pl-5 space-y-1 md:space-y-2">
+                                  {question.hints.map((hint, j) => (
+                                    <li key={j} className="text-sm md:text-base text-gray-600">{hint}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            <div>
+                              <h5 className="font-medium text-sm md:text-base mb-2">Sample Answer:</h5>
+                              <p className="text-sm md:text-base text-gray-600">{question.sampleAnswer}</p>
                             </div>
-                          )}
-                          <div>
-                            <h5 className="font-medium text-sm md:text-base mb-2">Sample Answer:</h5>
-                            <p className="text-sm md:text-base text-gray-600">{question.sampleAnswer}</p>
                           </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Practice Problems */}
-                {lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0 && (
-                  <div>
-                    <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Practice Problems</h3>
-                    <div className="space-y-4 md:space-y-6">
-                      {lesson.assessment.practiceProblems.map((problem, i) => (
-                        <div key={i} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
-                          <h4 className="text-base md:text-lg text-gray-900 mb-3">{problem.problem}</h4>
-                          <div className="mb-3 md:mb-4">
-                            <h5 className="font-medium text-sm md:text-base mb-2">Approach:</h5>
-                            <p className="text-sm md:text-base text-gray-600">{problem.approach}</p>
+                  {/* Practice Problems */}
+                  {lesson.assessment.practiceProblems && lesson.assessment.practiceProblems.length > 0 && (
+                    <div>
+                      <h3 className="text-lg md:text-xl text-gray-900 mb-3 md:mb-4">Practice Problems</h3>
+                      <div className="space-y-4 md:space-y-6">
+                        {lesson.assessment.practiceProblems.map((problem, i) => (
+                          <div key={i} className="bg-gray-50 rounded-xl md:rounded-2xl p-4 md:p-6">
+                            <h4 className="text-base md:text-lg text-gray-900 mb-3">{problem.problem}</h4>
+                            <div className="mb-3 md:mb-4">
+                              <h5 className="font-medium text-sm md:text-base mb-2">Approach:</h5>
+                              <p className="text-sm md:text-base text-gray-600">{problem.approach}</p>
+                            </div>
+                            <div>
+                              <h5 className="font-medium text-sm md:text-base mb-2">Solution:</h5>
+                              <p className="text-sm md:text-base text-gray-600">{problem.solution}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h5 className="font-medium text-sm md:text-base mb-2">Solution:</h5>
-                            <p className="text-sm md:text-base text-gray-600">{problem.solution}</p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                )}
-              </div>
-            )}
+                  )}
+                </div>
+              )}
 
             {/* Resources */}
             <div className="mb-8 md:mb-12">

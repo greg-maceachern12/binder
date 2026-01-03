@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { openai, aiModelLesson } from "@/app/lib/openai";
 import { supabase } from '@/app/lib/supabase/client';
-import { verifySubscription } from '@/app/lib/polar/client';
+// PAYMENT FUNCTIONALITY DISABLED - Uncomment to restore
+// import { verifySubscription } from '@/app/lib/polar/client';
 import { lessonJsonSchema } from '@/app/lib/schemas';
 
 export async function POST(request: Request) {
   try {
-    const { lessonId, lessonTitle, chapterTitle, courseTitle, userId } = await request.json();
+    const { lessonId, lessonTitle, chapterTitle, courseTitle } = await request.json();
 
     if (!lessonId || !lessonTitle || !chapterTitle || !courseTitle) {
       return NextResponse.json(
@@ -15,6 +16,11 @@ export async function POST(request: Request) {
       );
     }
 
+    // ==========================================
+    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
+    // Uncomment this block to restore subscription verification
+    // ==========================================
+    /*
     // Check subscription status if userId is provided
     if (userId) {
       const { data: userData, error: userError } = await supabase
@@ -48,6 +54,7 @@ export async function POST(request: Request) {
         );
       }
     }
+    */
 
     const completion = await openai.chat.completions.create({
       model: aiModelLesson,
@@ -80,8 +87,8 @@ export async function POST(request: Request) {
     // Save the generated lesson content to Supabase
     const { error: updateError } = await supabase
       .from('lessons')
-      .update({ 
-        content: lesson, 
+      .update({
+        content: lesson,
         ai_model: aiModelLesson
       })
       .eq('id', lessonId);

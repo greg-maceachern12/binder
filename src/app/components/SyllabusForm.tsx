@@ -64,7 +64,7 @@ export default function SyllabusForm() {
   const [coursesGenerated, setCoursesGenerated] = useState<number | null>(null);
   const topicInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-  
+
   // Upsell dialog state
   const [showUpsell, setShowUpsell] = useState(false);
   // const [lastTypedTime, setLastTypedTime] = useState<number>(0);
@@ -77,12 +77,12 @@ export default function SyllabusForm() {
   useEffect(() => {
     // User is eligible if they're logged in but don't have access
     const isEligible = user && !hasAccess;
-    
+
     if (isEligible) {
       const timer = setTimeout(() => {
         setShowUpsell(true);
       }, 4000); // Show after 4 seconds
-      
+
       return () => clearTimeout(timer);
     }
   }, [user, hasAccess]);
@@ -94,31 +94,36 @@ export default function SyllabusForm() {
         const { count, error } = await supabase
           .from('syllabi')
           .select('*', { count: 'exact', head: true });
-        
+
         if (error) {
           console.error('Error fetching syllabi count:', error);
           return;
         }
-        
+
         // Add a bit of social proof by increasing the displayed number
         setCoursesGenerated(count ? count + 112 : 112);
       } catch (error) {
         console.error('Error in fetchSyllabiCount:', error);
       }
     };
-    
+
     fetchSyllabiCount();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // If user is not logged in, redirect to login page
     if (!user) {
       router.push('/login');
       return;
     }
-    
+
+    // ==========================================
+    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
+    // Uncomment these blocks to restore subscription checks
+    // ==========================================
+    /*
     // Check if user can generate the selected course type
     if (!hasAccess) {
       // If they can't generate the selected course, show the upsell dialog instead of redirecting
@@ -132,7 +137,8 @@ export default function SyllabusForm() {
       setShowUpsell(true);
       return;
     }
-    
+    */
+
     setIsLoading(true);
     setError(null);
     // Clear success message when starting new generation
@@ -153,10 +159,11 @@ export default function SyllabusForm() {
       });
 
       if (!response.ok) {
-        if (response.status === 403) {
-          setError("You need an active subscription to generate more courses");
-          return;
-        }
+        // PAYMENT FUNCTIONALITY DISABLED - Uncomment to restore subscription error
+        // if (response.status === 403) {
+        //   setError("You need an active subscription to generate more courses");
+        //   return;
+        // }
         throw new Error('Failed to generate syllabus');
       }
 
@@ -194,62 +201,63 @@ export default function SyllabusForm() {
 
   return (
     <div className="max-w-5xl mx-auto px-4">
-      {/* Hero Section - More compact */}
-      <div className="text-center mb-6 md:mb-8">
-        <div className="inline-flex items-center justify-center">
-          <div className="relative rounded-full">
-            <div className="absolute inset-0 bg-indigo-200 rounded-full blur-2xl opacity-30"></div>
+      {/* Hero Section - Editorial Style */}
+      <div className="text-center mb-10 md:mb-14">
+        <div className="inline-flex items-center justify-center mb-6">
+          <div className="relative">
+            <div className="absolute inset-0 bg-indigo-500/20 blur-[40px] rounded-full"></div>
             <Image
               src="/logo_trans.png"
               alt="Logo"
-              width={96}
-              height={96}
-              className="w-14 h-14 md:w-16 md:h-16 relative"
+              width={112}
+              height={112}
+              className="w-20 h-20 md:w-24 md:h-24 relative drop-shadow-2xl"
               priority
             />
           </div>
         </div>
-        
-        <h1 className="text-3xl md:text-4xl text-gray-900 mb-3 leading-tight">
-          <span className="animate-gradient bg-gradient-to-r from-blue-600 via-yellow-600 to-pink-500 bg-clip-text text-transparent bg-300%">
-            Unlock your curiosity
+
+        <h1 className="text-5xl md:text-7xl font-serif text-gray-900 mb-6 leading-[0.9] tracking-tight">
+          <span className="block text-gray-800">Unlock your</span>
+          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 bg-clip-text text-transparent italic pr-2">
+            curiosity
           </span>
-          <span className="block text-2xl md:text-3xl mt-1 text-gray-800">with Primer AI</span>
         </h1>
-        
-        <p className="text-sm md:text-base text-gray-600 max-w-2xl mx-auto mb-4">
-        Turn your interests into expertise with handcrafted learning journeys that fit your style
+
+        <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mb-8 font-light leading-relaxed">
+          Turn your interests into expertise with <span className="font-medium text-gray-900">handcrafted learning journeys</span> that fit your style.
         </p>
-        
+
         {/* Social proof banner */}
         {coursesGenerated && (
-          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 text-indigo-700 text-xs mb-4">
-            <Sparkles className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-card text-indigo-900/80 text-sm mb-4 animate-fade-in-up delay-100">
+            <Sparkles className="w-4 h-4 text-indigo-500" />
             <span className="font-medium">{coursesGenerated.toLocaleString()} courses created</span>
           </div>
         )}
       </div>
 
-      {/* Course Creator Card - More compact */}
-      <div className="bg-white rounded-xl shadow-md border border-gray-100 p-4 md:p-5 mb-6 relative overflow-hidden">
+      {/* Course Creator Card - Premium Glass */}
+      <div className="glass-panel rounded-2xl p-6 md:p-8 mb-12 relative overflow-hidden transition-all duration-500 hover:shadow-2xl border-white/50">
         {/* Premium badge for subscribers */}
         {hasPremium && (
-          <div className="absolute top-3 right-3 z-10">
-            <div className="flex items-center gap-1 py-0.5 px-2 bg-emerald-100 text-emerald-800 rounded-full shadow-sm border border-emerald-200">
-              <Award className="w-3 h-3 text-emerald-600" />
-              <span className="text-xs font-semibold tracking-wide">PRO</span>
+          <div className="absolute top-4 right-4 z-10">
+            <div className="flex items-center gap-1.5 py-1 px-3 bg-emerald-100/80 backdrop-blur-sm text-emerald-800 rounded-full shadow-sm border border-emerald-200/50">
+              <Award className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-xs font-bold tracking-wide">PRO MEMBER</span>
             </div>
           </div>
         )}
 
         <h2 className="text-base md:text-lg font-medium text-gray-900 mb-3">Craft your personalized course</h2>
-        
+
         <form onSubmit={handleSubmit} className="space-y-3">
-          {/* Topic Input - Simplified without dropdown */}
-          <div>
-            <label htmlFor="topic" className="block text-xs font-medium text-gray-700 mb-1">What sparks your curiosity today?</label>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+          {/* Topic Input - Command Center Style */}
+          <div className="mb-6">
+            <label htmlFor="topic" className="block text-sm font-medium text-gray-700 mb-2 ml-1">What sparks your curiosity today?</label>
+            <div className="relative group">
+              <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-xl blur opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
               <input
                 id="topic"
                 ref={topicInputRef}
@@ -257,21 +265,21 @@ export default function SyllabusForm() {
                 value={topic}
                 onChange={handleTopicChange}
                 placeholder="Japanese cooking, urban sketching, crypto basics..."
-                className="w-full pl-9 pr-3 py-2.5 text-sm rounded-lg border border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-200 transition-all"
+                className="w-full pl-12 pr-10 py-4 text-lg bg-white/70 backdrop-blur-xl rounded-xl border-2 border-transparent focus:border-indigo-500/30 focus:bg-white/90 shadow-sm focus:shadow-lg focus:ring-0 transition-all placeholder:text-gray-400 text-gray-900 relative z-10"
                 disabled={isLoading}
               />
               {topic && !isLoading && (
                 <button
                   type="button"
                   onClick={() => setTopic('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 z-20 p-1 hover:bg-gray-100 rounded-full transition-colors"
                 >
                   ×
                 </button>
               )}
             </div>
           </div>
-          
+
           {/* Course Type Selection - More compact */}
           <div>
             <label className="block text-xs font-medium text-gray-700 mb-1">How deep do you want to dive?</label>
@@ -279,28 +287,30 @@ export default function SyllabusForm() {
               <button
                 type="button"
                 onClick={() => setCourseType('primer')}
-                className={`p-2.5 rounded-lg text-left transition-all border ${
-                  courseType === 'primer'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : 'border-gray-200 hover:border-gray-300'
-                }`}
+                className={`p-2.5 rounded-lg text-left transition-all border ${courseType === 'primer'
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  }`}
               >
-                <div className={`flex items-center gap-2 ${
-                  courseType === 'primer' ? 'text-indigo-700' : 'text-gray-700'
-                }`}>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    courseType === 'primer' ? 'bg-indigo-100' : 'bg-gray-100'
+                <div className={`flex items-center gap-2 ${courseType === 'primer' ? 'text-indigo-700' : 'text-gray-700'
                   }`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${courseType === 'primer' ? 'bg-indigo-100' : 'bg-gray-100'
+                    }`}>
                     🚀
                   </div>
                   <span className="font-medium text-xs">Quick Primer</span>
                 </div>
                 <p className="text-xs text-gray-600 pl-7 mt-0.5">Weekend warrior edition - the essentials in a flash</p>
               </button>
-              
+
               <button
                 type="button"
                 onClick={() => {
+                  // PAYMENT FUNCTIONALITY DISABLED - Everyone can select Full Course
+                  setCourseType('fullCourse');
+
+                  // Uncomment to restore premium restriction:
+                  /*
                   // Only allow Pro users to select Full Course
                   if (hasPremium) {
                     setCourseType('fullCourse');
@@ -310,21 +320,19 @@ export default function SyllabusForm() {
                     // Keep the primer selected
                     setCourseType('primer');
                   }
+                  */
                 }}
-                className={`p-2.5 rounded-lg text-left transition-all border ${
-                  courseType === 'fullCourse'
-                    ? 'border-indigo-500 bg-indigo-50'
-                    : hasPremium 
-                      ? 'border-gray-200 hover:border-gray-300' 
-                      : 'border-gray-200 opacity-80 cursor-not-allowed'
-                }`}
+                className={`p-2.5 rounded-lg text-left transition-all border ${courseType === 'fullCourse'
+                  ? 'border-indigo-500 bg-indigo-50'
+                  : 'border-gray-200 hover:border-gray-300'
+                  // PAYMENT DISABLED - Removed opacity/cursor-not-allowed for non-premium
+                  // Original: : hasPremium ? 'border-gray-200 hover:border-gray-300' : 'border-gray-200 opacity-80 cursor-not-allowed'
+                  }`}
               >
-                <div className={`flex items-center gap-2 ${
-                  courseType === 'fullCourse' ? 'text-indigo-700' : 'text-gray-700'
-                }`}>
-                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                    courseType === 'fullCourse' ? 'bg-indigo-100' : 'bg-gray-100'
+                <div className={`flex items-center gap-2 ${courseType === 'fullCourse' ? 'text-indigo-700' : 'text-gray-700'
                   }`}>
+                  <div className={`w-5 h-5 rounded-full flex items-center justify-center ${courseType === 'fullCourse' ? 'bg-indigo-100' : 'bg-gray-100'
+                    }`}>
                     🎓
                   </div>
                   <div className="flex items-center gap-1">
@@ -341,38 +349,38 @@ export default function SyllabusForm() {
               </button>
             </div>
           </div>
-          
-          {/* Generate Button - Smaller but still prominent */}
+
+          {/* Generate Button - Big and Bold */}
           <div>
             <button
               type="submit"
               disabled={!topic || isLoading}
-              className="w-full py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-1.5 text-sm"
+              className="w-full py-4 bg-gray-900 text-white rounded-xl hover:bg-black disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 text-base font-medium shadow-lg hover:shadow-xl hover:scale-[1.01]"
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-5 h-5 animate-spin" />
                   <span>Crafting your perfect course...</span>
                 </>
               ) : !user ? (
                 <>
-                  <Zap className="w-3.5 h-3.5" />
+                  <Zap className="w-5 h-5" />
                   <span>Sign In to Create</span>
                 </>
               ) : !hasAccess ? (
                 <>
-                  <Sparkles className="w-3.5 h-3.5" />
+                  <Sparkles className="w-5 h-5" />
                   <span>Unlock Premium Learning</span>
                 </>
               ) : (
                 <>
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span>Craft My Course</span>
+                  <BookOpen className="w-5 h-5" />
+                  <span>Start Learning Journey</span>
                 </>
               )}
             </button>
           </div>
-          
+
           {/* Info text - Smaller */}
           {user && hasAccess && (
             <p className="text-center text-[11px] text-gray-500">
@@ -380,7 +388,7 @@ export default function SyllabusForm() {
             </p>
           )}
         </form>
-        
+
         {/* Error & Success Messages */}
         {error && (
           <div className="mt-3 p-3 bg-red-50 border border-red-100 text-red-600 rounded-lg text-xs flex items-start gap-2">
@@ -415,51 +423,55 @@ export default function SyllabusForm() {
 
       {/* Popular Topics - Clean grid layout */}
       <div className="mb-16">
-        <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
-          <TrendingUp className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-2xl font-serif text-gray-900 mb-8 flex items-center gap-3">
+          <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+            <TrendingUp className="w-5 h-5" />
+          </div>
           <span>Hot Topics Right Now</span>
         </h2>
-        
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
-          {Object.entries(TOPIC_CATEGORIES).flatMap(([category, topics]) => 
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {Object.entries(TOPIC_CATEGORIES).flatMap(([category, topics]) =>
             topics.slice(0, 1).map(topic => (
               <button
                 key={topic}
                 onClick={() => handleTopicSelect(topic)}
-                className="group p-4 text-left rounded-xl border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/30 transition-all duration-200"
+                className="group p-5 text-left rounded-xl glass-card hover:bg-white/80 hover:-translate-y-1 hover:border-indigo-200/50"
               >
-                <p className="text-xs text-indigo-600 mb-1 uppercase tracking-wider font-medium">{category}</p>
-                <h3 className="text-gray-900 group-hover:text-indigo-700 transition-colors font-medium">{topic}</h3>
+                <p className="text-[10px] font-bold text-indigo-500 mb-2 uppercase tracking-widest">{category}</p>
+                <h3 className="text-gray-900 text-lg font-medium group-hover:text-indigo-700 transition-colors leading-tight">{topic}</h3>
               </button>
             ))
           )}
         </div>
       </div>
-      {/* Featured Courses - Enhanced card design with actual images */}
+      {/* Featured Courses - Enhanced card design */}
       <div className="mb-8">
-        <h2 className="text-xl font-medium text-gray-900 mb-6 flex items-center gap-2">
-          <BookOpen className="w-5 h-5 text-indigo-600" />
+        <h2 className="text-2xl font-serif text-gray-900 mb-8 flex items-center gap-3">
+          <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600">
+            <BookOpen className="w-5 h-5" />
+          </div>
           <span>Staff Picks & Community Favorites</span>
         </h2>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {[
             {
-              title: "🏠 DIY A-Frame Constructions",
+              title: "DIY A-Frame Constructions",
               description: "Master the art of building your dream A-frame retreat, from blueprint to final nail.",
               href: "/syllabus/142da292-c1b8-4f18-84cd-e0fe9790793b",
               img: "https://images.unsplash.com/photo-1573812331441-d99117496acb?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
               category: "Home Building"
             },
             {
-              title: "💰 Wealth Management - Primer",
+              title: "Wealth Management",
               description: "Navigate the world of personal finance with insider strategies for building lasting wealth.",
               href: "/syllabus/d333a703-87a9-4387-83a5-a1a82c1b168c",
               img: "https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
               category: "Finance"
             },
             {
-              title: "🌱 Microgreens Garden",
+              title: "Microgreens Garden",
               description: "Transform your windowsill into a flourishing microgreen oasis — from seed to harvest.",
               href: "/syllabus/eb470a51-d8db-45fd-baa4-252214750b29",
               img: "https://images.unsplash.com/photo-1702351253307-e6f8a3f308ff?q=80?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w2OTM2NzZ8MHwxfHJhbmRvbXx8fHx8fHx8fDE3MzYxMDU4NTN8&ixlib=rb-4.0.3&q=80&w=1080",
@@ -469,26 +481,30 @@ export default function SyllabusForm() {
             <a
               key={feature.title}
               href={feature.href}
-              className="group block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-all duration-300"
+              className="group block glass-card rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
             >
-              <div className="h-32 relative overflow-hidden">
-                <Image 
-                  src={feature.img} 
+              <div className="h-48 relative overflow-hidden">
+                <Image
+                  src={feature.img}
                   alt={feature.title}
-                  width={100}
-                  height={100}
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  width={400}
+                  height={300}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 />
-                <div className="absolute inset-0 bg-black/10 group-hover:bg-black/0 transition-colors"></div>
-                <div className="absolute bottom-3 left-4">
-                  <span className="px-3 py-1 bg-white/90 rounded-full text-xs font-medium text-indigo-700">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-80 group-hover:opacity-60 transition-opacity"></div>
+                <div className="absolute bottom-4 left-4 right-4">
+                  <span className="inline-block px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-[10px] font-bold text-white mb-2 uppercase tracking-wide border border-white/30">
                     {feature.category}
                   </span>
+                  <h3 className="text-xl font-serif text-white font-medium drop-shadow-md">{feature.title}</h3>
                 </div>
               </div>
               <div className="p-5">
-                <h3 className="text-lg font-medium text-gray-900 group-hover:text-indigo-700 transition-colors mb-2">{feature.title}</h3>
-                <p className="text-gray-600 text-sm">{feature.description}</p>
+                <p className="text-gray-600 text-sm leading-relaxed">{feature.description}</p>
+                <div className="mt-4 flex items-center text-indigo-600 text-sm font-medium opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+                  <span>Explore Course</span>
+                  <BookOpen className="w-4 h-4 ml-2" />
+                </div>
               </div>
             </a>
           ))}
@@ -496,10 +512,10 @@ export default function SyllabusForm() {
       </div>
 
       {/* Premium Upsell Dialog */}
-      <UpsellDialog 
-        isOpen={showUpsell} 
-        onClose={() => setShowUpsell(false)} 
-        storeUrl={POLAR_SUBSCRIPTION_URL} 
+      <UpsellDialog
+        isOpen={showUpsell}
+        onClose={() => setShowUpsell(false)}
+        storeUrl={POLAR_SUBSCRIPTION_URL}
       />
     </div>
   );

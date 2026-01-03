@@ -20,10 +20,8 @@ export default function EnhancedHome() {
         />
       </div>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 md:py-12 relative">
-        {/* Optional glassy overlay */}
-        <div className="absolute inset-0 bg-white/50 backdrop-blur-3xl rounded-3xl" />
-        <div className="relative">
+      <div className="max-w-6xl mx-auto px-4 py-8 md:py-16 relative z-10">
+        <div className="relative animate-fade-in-up">
           <SyllabusForm />
           <FeedbackForm />
         </div>

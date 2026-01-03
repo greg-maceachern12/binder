@@ -36,7 +36,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [subscriptionStatus, setSubscriptionStatus] = useState<SubscriptionStatus>('loading');
 
   // Fetch user's subscription data from your custom table - wrap in useCallback without user dependency
-  const fetchUserSubscription = useCallback(async (userId: string) => {
+  const fetchUserSubscription = useCallback(async () => {
+    // ==========================================
+    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
+    // Uncomment this block to restore payment verification
+    // ==========================================
+    /*
     try {
       const { data, error } = await supabase
         .from('users')
@@ -89,13 +94,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Error in fetchUserSubscription:', error);
       setSubscriptionStatus('inactive');
     }
+    */
+
+    // FREE SITE MODE: Always grant active subscription status
+    setSubscriptionStatus('active');
+    setAppUser(currentAppUser => {
+      if (!currentAppUser) return null;
+      return {
+        ...currentAppUser,
+        subscription_id: 'free-access',
+        trial_active: false,
+        polar_id: undefined
+      };
+    });
   }, []); // Remove user from dependencies
 
   // Function to refresh subscription status
   const refreshSubscription = async () => {
-    if (user?.id) {
-      await fetchUserSubscription(user.id);
-    }
+    await fetchUserSubscription();
   };
 
   useEffect(() => {
@@ -126,14 +142,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     supabase.auth.getSession().then(({ data: { session } }) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      
+
       // Fetch subscription data if user is logged in
       if (currentUser?.id) {
-        fetchUserSubscription(currentUser.id);
+        fetchUserSubscription();
       } else {
         setSubscriptionStatus('inactive');
       }
-      
+
       setIsLoading(false);
     });
 
@@ -141,15 +157,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
       const currentUser = session?.user ?? null;
       setUser(currentUser);
-      
+
       // Fetch subscription data if user is logged in
       if (currentUser?.id) {
-        fetchUserSubscription(currentUser.id);
+        fetchUserSubscription();
       } else {
         setAppUser(null);
         setSubscriptionStatus('inactive');
       }
-      
+
       setIsLoading(false);
     });
 
