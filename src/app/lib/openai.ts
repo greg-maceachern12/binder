@@ -4,7 +4,7 @@ if (!process.env.OPENROUTER_API_KEY) {
   throw new Error('Missing API Key');
 }
 
-export const aiModelSyllabus = "google/gemini-2.5-flash";
+export const aiModelSyllabus = "google/gemini-3-flash-preview";
 export const aiModelLesson = "google/gemini-2.5-flash-lite";
 
 export const openai = new OpenAI({
