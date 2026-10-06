@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { openai, aiModelSyllabus } from "@/app/lib/openai";
-import { supabase } from "@/app/lib/supabase/client";
+import { authenticateRequest } from "@/app/lib/supabase/admin";
 import { SyllabusLesson } from "@/app/types";
 import { COURSE_TEMPLATES } from "@/app/lib/templates";
 import { syllabusJsonSchema } from '@/app/lib/schemas';
@@ -27,11 +27,16 @@ async function getUnsplashImage(query: string): Promise<string | null> {
 
 export async function POST(request: Request) {
   try {
+    const auth = await authenticateRequest(request);
+    if (!auth.ok) {
+      return NextResponse.json({ error: auth.message }, { status: auth.status });
+    }
+    const { user, admin } = auth;
+
     const {
       topic,
       courseType = "primer",
-      userId = null,
-    }: { topic: string; courseType: keyof typeof COURSE_TEMPLATES; userId?: string | null } =
+    }: { topic: string; courseType: keyof typeof COURSE_TEMPLATES } =
       await request.json();
 
     if (!topic) {
@@ -86,7 +91,7 @@ export async function POST(request: Request) {
     console.log(courseType)
 
     // Then use it in your existing supabase insert
-    const { data: syllabusData, error: syllabusError } = await supabase
+    const { data: syllabusData, error: syllabusError } = await admin
       .from("syllabi")
       .insert({
         title: syllabus.title,
@@ -97,7 +102,7 @@ export async function POST(request: Request) {
         image_url: imageUrl,
         location: userLoc, // Using the IP column to store city instead
         isp: locationData.org || null,
-        user_id: userId,
+        user_id: user.id,
         course_type: courseType,
         ai_model: aiModelSyllabus
       })
@@ -110,7 +115,7 @@ export async function POST(request: Request) {
     for (let i = 0; i < syllabus.chapters.length; i++) {
       const chapter = syllabus.chapters[i];
 
-      const { data: chapterData, error: chapterError } = await supabase
+      const { data: chapterData, error: chapterError } = await admin
         .from("chapters")
         .insert({
           syllabus_id: syllabusData.id,
@@ -134,7 +139,7 @@ export async function POST(request: Request) {
         })
       );
 
-      const { error: lessonsError } = await supabase
+      const { error: lessonsError } = await admin
         .from("lessons")
         .insert(lessonInserts);
 
@@ -147,21 +152,21 @@ export async function POST(request: Request) {
     // ==========================================
     /*
     // If user is on a trial (has no subscription_id), update trial_active to false
-    if (userId) {
+    if (user.id) {
       // First get the user to check their current status
-      const { data: userData, error: userError } = await supabase
+      const { data: userData, error: userError } = await admin
         .from("users")
         .select("subscription_id, trial_active")
-        .eq("id", userId)
+        .eq("id", user.id)
         .single();
       
       if (!userError && userData && userData.trial_active) {
         // User is on trial and has no subscription, so turn off their trial
-        console.log(`Setting trial_active to false for user ${userId} after successful generation`);
-        const { error: updateError } = await supabase
+        console.log(`Setting trial_active to false for user ${user.id} after successful generation`);
+        const { error: updateError } = await admin
           .from("users")
           .update({ trial_active: false })
-          .eq("id", userId);
+          .eq("id", user.id);
         
         if (updateError) {
           console.error("Failed to update user trial status:", updateError);
