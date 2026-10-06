@@ -2,11 +2,10 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
-import { Loader2, BookOpen, Search, TrendingUp, Zap, CheckCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
+import { Loader2, BookOpen, Search, TrendingUp, Zap, CheckCircle, AlertCircle, Sparkles } from 'lucide-react';
 import { getAuthorizationHeader, supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
-import UpsellDialog from './UpsellDialog';
 
 type CourseType = 'primer' | 'fullCourse';
 
@@ -53,8 +52,7 @@ const TOPIC_CATEGORIES: Record<TopicCategoryKey, string[]> = {
 };
 
 export default function SyllabusForm() {
-  // Use the enhanced auth context with subscription status
-  const { user, hasAccess, hasPremium } = useAuth();
+  const { user } = useAuth();
   const [topic, setTopic] = useState('');
   const [courseType, setCourseType] = useState<CourseType>('primer');
   const [successTopic, setSuccessTopic] = useState<string>('');
@@ -64,28 +62,6 @@ export default function SyllabusForm() {
   const [coursesGenerated, setCoursesGenerated] = useState<number | null>(null);
   const topicInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
-
-  // Upsell dialog state
-  const [showUpsell, setShowUpsell] = useState(false);
-  // const [lastTypedTime, setLastTypedTime] = useState<number>(0);
-
-  // Polar subscription URL
-  const POLAR_SUBSCRIPTION_URL = 'https://buy.polar.sh/polar_cl_fDrvRuLYXy3EkHVwSktBlPzLCCEPeFqr4ai5D0sdvVo';
-
-
-  // Show upsell dialog after 4 seconds for eligible users (logged in but no subscription or trial)
-  useEffect(() => {
-    // User is eligible if they're logged in but don't have access
-    const isEligible = user && !hasAccess;
-
-    if (isEligible) {
-      const timer = setTimeout(() => {
-        setShowUpsell(true);
-      }, 4000); // Show after 4 seconds
-
-      return () => clearTimeout(timer);
-    }
-  }, [user, hasAccess]);
 
   // Fetch total courses generated
   useEffect(() => {
@@ -119,26 +95,6 @@ export default function SyllabusForm() {
       return;
     }
 
-    // ==========================================
-    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
-    // Uncomment these blocks to restore subscription checks
-    // ==========================================
-    /*
-    // Check if user can generate the selected course type
-    if (!hasAccess) {
-      // If they can't generate the selected course, show the upsell dialog instead of redirecting
-      setShowUpsell(true);
-      return;
-    }
-    
-    // Check if user is trying to generate a Full Course without Pro subscription
-    if (courseType === 'fullCourse' && !hasPremium) {
-      // Show upsell dialog for non-Pro users trying to access Full Course
-      setShowUpsell(true);
-      return;
-    }
-    */
-
     setIsLoading(true);
     setError(null);
     // Clear success message when starting new generation
@@ -165,11 +121,6 @@ export default function SyllabusForm() {
       });
 
       if (!response.ok) {
-        // PAYMENT FUNCTIONALITY DISABLED - Uncomment to restore subscription error
-        // if (response.status === 403) {
-        //   setError("You need an active subscription to generate more courses");
-        //   return;
-        // }
         const body = await response.json().catch(() => null);
         throw new Error(body?.error || 'Failed to generate syllabus');
       }
@@ -246,16 +197,6 @@ export default function SyllabusForm() {
 
       {/* Course Creator Card - Premium Glass */}
       <div className="glass-panel rounded-2xl p-6 md:p-8 mb-12 relative overflow-hidden transition-all duration-500 hover:shadow-2xl border-white/50">
-        {/* Premium badge for subscribers */}
-        {hasPremium && (
-          <div className="absolute top-4 right-4 z-10">
-            <div className="flex items-center gap-1.5 py-1 px-3 bg-emerald-100/80 backdrop-blur-sm text-emerald-800 rounded-full shadow-sm border border-emerald-200/50">
-              <Award className="w-3.5 h-3.5 text-emerald-600" />
-              <span className="text-xs font-bold tracking-wide">PRO MEMBER</span>
-            </div>
-          </div>
-        )}
-
         <h2 className="text-base md:text-lg font-medium text-gray-900 mb-3">Craft your personalized course</h2>
 
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -312,28 +253,10 @@ export default function SyllabusForm() {
 
               <button
                 type="button"
-                onClick={() => {
-                  // PAYMENT FUNCTIONALITY DISABLED - Everyone can select Full Course
-                  setCourseType('fullCourse');
-
-                  // Uncomment to restore premium restriction:
-                  /*
-                  // Only allow Pro users to select Full Course
-                  if (hasPremium) {
-                    setCourseType('fullCourse');
-                  } else {
-                    // Show upsell dialog for non-Pro users
-                    setShowUpsell(true);
-                    // Keep the primer selected
-                    setCourseType('primer');
-                  }
-                  */
-                }}
+                onClick={() => setCourseType('fullCourse')}
                 className={`p-2.5 rounded-lg text-left transition-all border ${courseType === 'fullCourse'
                   ? 'border-indigo-500 bg-indigo-50'
                   : 'border-gray-200 hover:border-gray-300'
-                  // PAYMENT DISABLED - Removed opacity/cursor-not-allowed for non-premium
-                  // Original: : hasPremium ? 'border-gray-200 hover:border-gray-300' : 'border-gray-200 opacity-80 cursor-not-allowed'
                   }`}
               >
                 <div className={`flex items-center gap-2 ${courseType === 'fullCourse' ? 'text-indigo-700' : 'text-gray-700'
@@ -342,14 +265,7 @@ export default function SyllabusForm() {
                     }`}>
                     🎓
                   </div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-medium text-xs">Full Course</span>
-                    {/* Updated Premium badge for Full Course */}
-                    <span className="flex items-center gap-0.5 px-1 py-0.5 bg-emerald-100 text-emerald-800 text-[10px] rounded-full border border-emerald-200">
-                      <Award className="w-2.5 h-2.5 text-emerald-600" />
-                      <span className="font-semibold tracking-wide">PRO</span>
-                    </span>
-                  </div>
+                  <span className="font-medium text-xs">Full Course</span>
                 </div>
                 <p className="text-xs text-gray-600 pl-7 mt-0.5">Master class edition - from novice to knowledgeable</p>
 
@@ -374,11 +290,6 @@ export default function SyllabusForm() {
                   <Zap className="w-5 h-5" />
                   <span>Sign In to Create</span>
                 </>
-              ) : !hasAccess ? (
-                <>
-                  <Sparkles className="w-5 h-5" />
-                  <span>Unlock Premium Learning</span>
-                </>
               ) : (
                 <>
                   <BookOpen className="w-5 h-5" />
@@ -389,7 +300,7 @@ export default function SyllabusForm() {
           </div>
 
           {/* Info text - Smaller */}
-          {user && hasAccess && (
+          {user && (
             <p className="text-center text-[11px] text-gray-500">
               Your tailor-made curriculum is just moments away
             </p>
@@ -517,13 +428,6 @@ export default function SyllabusForm() {
           ))}
         </div>
       </div>
-
-      {/* Premium Upsell Dialog */}
-      <UpsellDialog
-        isOpen={showUpsell}
-        onClose={() => setShowUpsell(false)}
-        storeUrl={POLAR_SUBSCRIPTION_URL}
-      />
     </div>
   );
 }

@@ -146,35 +146,6 @@ export async function POST(request: Request) {
       if (lessonsError) throw lessonsError;
     }
 
-    // ==========================================
-    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
-    // Uncomment this block to restore trial deactivation after first generation
-    // ==========================================
-    /*
-    // If user is on a trial (has no subscription_id), update trial_active to false
-    if (user.id) {
-      // First get the user to check their current status
-      const { data: userData, error: userError } = await admin
-        .from("users")
-        .select("subscription_id, trial_active")
-        .eq("id", user.id)
-        .single();
-      
-      if (!userError && userData && userData.trial_active) {
-        // User is on trial and has no subscription, so turn off their trial
-        console.log(`Setting trial_active to false for user ${user.id} after successful generation`);
-        const { error: updateError } = await admin
-          .from("users")
-          .update({ trial_active: false })
-          .eq("id", user.id);
-        
-        if (updateError) {
-          console.error("Failed to update user trial status:", updateError);
-        }
-      }
-    }
-    */
-
     // Return the syllabus ID as the slug
     return NextResponse.json({
       success: true,
