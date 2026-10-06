@@ -51,3 +51,13 @@ export const supabase = createClient(
     },
   }
 );
+
+/** Access token for the signed-in browser session, sent to server routes that verify it. */
+export async function getAuthorizationHeader(): Promise<{ Authorization: string } | null> {
+  const { data, error } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  if (error || !token) {
+    return null;
+  }
+  return { Authorization: `Bearer ${token}` };
+}

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '@/app/lib/supabase/client';
+import { getAuthorizationHeader, supabase } from '@/app/lib/supabase/client';
 import { Syllabus, DetailedLesson, Chapter, SyllabusLesson } from '@/app/types';
 import { DbSyllabus, DbChapter, DbLesson } from '@/app/types/database';
 import SyllabusDisplay from '@/app/components/SyllabusDisplay';
@@ -112,9 +112,17 @@ export default function SyllabusPage() {
     }, [params.slug, router]);
 
     const generateLesson = async (chapter: Chapter, lesson: SyllabusLesson) => {
+        const authHeader = await getAuthorizationHeader();
+        if (!authHeader) {
+            throw new Error('Sign in required');
+        }
+
         const response = await fetch('/api/generate-lesson', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                ...authHeader,
+            },
             body: JSON.stringify({
                 lessonId: lesson.id,
                 lessonTitle: lesson.title,
@@ -124,20 +132,11 @@ export default function SyllabusPage() {
         });
 
         if (!response.ok) {
-            throw new Error('Failed to generate lesson');
+            const body = await response.json().catch(() => null);
+            throw new Error(body?.error || 'Failed to generate lesson');
         }
 
         const data = await response.json();
-
-        const { error: updateError } = await supabase
-            .from('lessons')
-            .update({ content: data.lesson })
-            .eq('id', lesson.id);
-
-        if (updateError) {
-            throw new Error('Failed to save lesson content');
-        }
-
         return data.lesson;
     };
 

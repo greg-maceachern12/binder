@@ -47,7 +47,8 @@ The codebase follows a standard Next.js App Router structure:
 -   `src/app/layout.tsx`: Defines the root HTML structure, includes global styles, fonts, analytics, and wraps the application in the `AuthProvider`.
 -   `src/app/page.tsx`: The main landing page, featuring the `SyllabusForm` and `FeedbackForm`.
 -   `src/app/context/AuthContext.tsx`: Manages user authentication state, interacts with Supabase Auth, and handles subscription status checks.
--   `src/app/lib/supabase/client.ts`: (Expected location) Initializes the Supabase client.
+-   `src/app/lib/supabase/client.ts`: Browser Supabase client (anon key, user session).
+-   `src/app/lib/supabase/admin.ts`: Server-only Supabase client (service role). Used by course generation.
 -   `src/app/api/`: Contains backend API routes used by the application (e.g., subscription verification).
 
 ## Getting Started
@@ -87,12 +88,22 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Environment Variables
 
-(List required environment variables, e.g., Supabase URL and Anon Key)
+Copy `.env.example` to `.env.local` and fill in the values. `NEXT_PUBLIC_` variables are sent to the browser. Everything else stays on the server.
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_URL
 NEXT_PUBLIC_SUPABASE_ANON_KEY=YOUR_SUPABASE_ANON_KEY
-# Add any other required variables (e.g., for subscription API)
+
+# Server-only. Required for course generation after Row Level Security lockdown.
+# This is the Supabase service_role key (Dashboard → Project Settings → API).
+# Do not add a NEXT_PUBLIC_ prefix. Do not import the admin client into client components.
+SUPABASE_SERVICE_ROLE_KEY=YOUR_SUPABASE_SERVICE_ROLE_KEY
+
+OPENROUTER_API_KEY=YOUR_OPENROUTER_API_KEY
+NEXT_PUBLIC_UNSPLASH_ACCESS_KEY=YOUR_UNSPLASH_ACCESS_KEY
+NEXT_PUBLIC_WEB3FORMS_ACCESS_KEY=YOUR_WEB3FORMS_ACCESS_KEY
 ```
 
-Create a `.env.local` file in the root directory and add these variables.
+`src/app/lib/supabase/admin.ts` reads `SUPABASE_SERVICE_ROLE_KEY`. Syllabus and lesson generation use that client to insert syllabi, chapters, and lessons, and to fill a lesson that has no content yet. The browser client keeps using the anon key for reads.
+
+Add `SUPABASE_SERVICE_ROLE_KEY` on the host before deploying this change. Drop the interim insert/update policies on `syllabi`, `chapters`, and `lessons` only after that deploy is live. Doing it earlier leaves generation with no way to write.

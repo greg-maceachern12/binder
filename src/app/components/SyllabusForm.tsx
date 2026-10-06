@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { Loader2, BookOpen, Search, TrendingUp, Zap, CheckCircle, AlertCircle, Sparkles, Award } from 'lucide-react';
-import { supabase } from "@/app/lib/supabase/client";
+import { getAuthorizationHeader, supabase } from "@/app/lib/supabase/client";
 import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
 import UpsellDialog from './UpsellDialog';
@@ -146,15 +146,21 @@ export default function SyllabusForm() {
     setSuccessTopic('');
 
     try {
+      const authHeader = await getAuthorizationHeader();
+      if (!authHeader) {
+        setError('Please sign in again.');
+        return;
+      }
+
       const response = await fetch('/api/generate-syllabus', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...authHeader,
         },
         body: JSON.stringify({
           topic,
           courseType,
-          userId: user.id
         }),
       });
 
@@ -164,7 +170,8 @@ export default function SyllabusForm() {
         //   setError("You need an active subscription to generate more courses");
         //   return;
         // }
-        throw new Error('Failed to generate syllabus');
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.error || 'Failed to generate syllabus');
       }
 
       const data = await response.json();
