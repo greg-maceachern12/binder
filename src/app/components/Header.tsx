@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { User, LogOut, Loader2, Zap, Award } from 'lucide-react';
+import { User, LogOut, Loader2 } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from "@/components/ui/button";
@@ -18,13 +18,11 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Header() {
-  const { 
-    user, 
-    isAuthenticated, 
-    isLoading, 
-    signOut, 
-    subscriptionStatus, 
-    hasPremium 
+  const {
+    user,
+    isAuthenticated,
+    isLoading,
+    signOut,
   } = useAuth();
   const [isSigningOut, setIsSigningOut] = useState(false);
   const [localLoading, setLocalLoading] = useState(true);
@@ -59,16 +57,6 @@ export default function Header() {
     }
   };
   
-  const renderUserIcon = () => {
-    if (hasPremium) {
-      return <Award className="w-5 h-5 text-emerald-600" />;
-    } else if (subscriptionStatus === 'trial') {
-      return <Zap className="w-5 h-5 text-indigo-600" />;
-    } else {
-      return <User className="w-5 h-5" />;
-    }
-  };
-
   return (
     <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-md shadow-sm border-b border-border">
       <div className="max-w-6xl mx-auto px-4 py-2 flex justify-between items-center">
@@ -89,7 +77,7 @@ export default function Header() {
                 <Button variant="ghost" className="flex items-center gap-2 py-1.5 px-2 rounded-full h-auto">
                   <Avatar className="w-8 h-8">
                     <AvatarFallback className="bg-indigo-100 text-indigo-600 flex items-center justify-center">
-                      {renderUserIcon()}
+                      <User className="w-5 h-5" />
                     </AvatarFallback>
                   </Avatar>
                   {user?.email && (
@@ -97,16 +85,6 @@ export default function Header() {
                       <span className="text-sm font-medium">
                         {user.email.split('@')[0]}
                       </span>
-                      {hasPremium && (
-                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200 font-medium">
-                          PRO
-                        </span>
-                      )}
-                      {subscriptionStatus === 'trial' && (
-                        <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full font-medium">
-                          TRIAL
-                        </span>
-                      )}
                     </div>
                   )}
                 </Button>
@@ -114,18 +92,8 @@ export default function Header() {
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="font-normal">
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none flex items-center gap-2">
+                    <p className="text-sm font-medium leading-none">
                       Account
-                      {hasPremium && (
-                        <span className="text-xs bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full border border-emerald-200">
-                          PRO
-                        </span>
-                      )}
-                      {subscriptionStatus === 'trial' && (
-                        <span className="text-xs bg-indigo-100 text-indigo-600 px-1.5 py-0.5 rounded-full">
-                          TRIAL
-                        </span>
-                      )}
                     </p>
                     <p className="text-xs leading-none text-muted-foreground">
                       {user.email}

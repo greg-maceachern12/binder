@@ -9,7 +9,7 @@ Primer AI is designed to provide AI-generated courses and lessons to users. Key 
 -   **Framework:** [Next.js](https://nextjs.org/) (App Router)
 -   **Styling:** Tailwind CSS (implied by `globals.css` likely containing `@tailwind` directives)
 -   **Authentication:** [Supabase](https://supabase.com/) (Email OTP - One-Time Password)
--   **Subscription Management:** Custom logic using Supabase tables (`users`) and a backend API (`/api/subscription/verify`) to handle trial, active, and inactive subscription states.
+-   **Access:** The app is free. Signed-in users can generate Quick Primers and Full Courses with no subscription.
 -   **UI Components:** The application uses various React components, notably `SyllabusForm` and `FeedbackForm` on the main page, and a global `Header`.
 -   **Context Management:** React Context API is used for managing authentication state (`src/app/context/AuthContext.tsx`).
 -   **Analytics:** Google Analytics is integrated.
@@ -23,7 +23,7 @@ The codebase follows a standard Next.js App Router structure:
 ├── public/          # Static assets (images, fonts, etc.)
 ├── src/
 │   ├── app/         # Application routes, layouts, pages, and components
-│   │   ├── api/     # API routes (e.g., for subscription verification)
+│   │   ├── api/     # API routes (course and lesson generation)
 │   │   ├── components/ # Shared React components (e.g., Header, SyllabusForm)
 │   │   ├── context/    # React Context providers (e.g., AuthContext)
 │   │   ├── dashboard/  # Routes/components related to the user dashboard
@@ -46,10 +46,10 @@ The codebase follows a standard Next.js App Router structure:
 
 -   `src/app/layout.tsx`: Defines the root HTML structure, includes global styles, fonts, analytics, and wraps the application in the `AuthProvider`.
 -   `src/app/page.tsx`: The main landing page, featuring the `SyllabusForm` and `FeedbackForm`.
--   `src/app/context/AuthContext.tsx`: Manages user authentication state, interacts with Supabase Auth, and handles subscription status checks.
+-   `src/app/context/AuthContext.tsx`: Manages user authentication state and interacts with Supabase Auth.
 -   `src/app/lib/supabase/client.ts`: Browser Supabase client (anon key, user session).
 -   `src/app/lib/supabase/admin.ts`: Server-only Supabase client (service role). Used by course generation.
--   `src/app/api/`: Contains backend API routes used by the application (e.g., subscription verification).
+-   `src/app/api/`: Contains backend API routes used by the application (course and lesson generation).
 
 ## Getting Started
 

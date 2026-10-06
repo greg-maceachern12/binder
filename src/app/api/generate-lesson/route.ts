@@ -1,8 +1,6 @@
 import { NextResponse } from "next/server";
 import { openai, aiModelLesson } from "@/app/lib/openai";
 import { authenticateRequest } from '@/app/lib/supabase/admin';
-// PAYMENT FUNCTIONALITY DISABLED - Uncomment to restore
-// import { verifySubscription } from '@/app/lib/polar/client';
 import { lessonJsonSchema } from '@/app/lib/schemas';
 
 type OwnerRecord = { user_id: string | null };
@@ -65,46 +63,6 @@ export async function POST(request: Request) {
         { status: 409 }
       );
     }
-
-    // ==========================================
-    // PAYMENT FUNCTIONALITY DISABLED - FREE SITE
-    // Uncomment this block to restore subscription verification
-    // ==========================================
-    /*
-    // Check subscription status for the signed-in user
-    if (user.id) {
-      const { data: userData, error: userError } = await admin
-        .from('users')
-        .select('subscription_id, trial_active')
-        .eq('id', user.id)
-        .single();
-        
-      if (userError) {
-        console.error('Error fetching user data:', userError);
-        return NextResponse.json(
-          { error: 'Failed to verify subscription status' },
-          { status: 500 }
-        );
-      }
-      
-      // Check if user has an active subscription or trial
-      let hasAccess = false;
-      
-      if (userData.subscription_id) {
-        // Verify subscription with API
-        hasAccess = await verifySubscription(userData.subscription_id);
-      } else if (userData.trial_active) {
-        hasAccess = true;
-      }
-      
-      if (!hasAccess) {
-        return NextResponse.json(
-          { error: 'Subscription required to generate lessons' },
-          { status: 403 }
-        );
-      }
-    }
-    */
 
     const completion = await openai.chat.completions.create({
       model: aiModelLesson,
